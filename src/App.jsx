@@ -28,6 +28,8 @@ function RequireAuth({ children, role }) {
 }
 
 export default function App() {
+  const { ready } = useStore()
+  if (!ready) return <p className="p-10 text-center text-sm text-slate-600">Connecting to the database…</p>
   return (
     <Routes>
       <Route path="/" element={<Landing />} />

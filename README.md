@@ -41,3 +41,14 @@ Open the browser DevTools (F12) → Application → Local Storage → delete the
 
 ## Limits
 Authentication and storage are browser-only. A real deployment needs verified authentication and a shared database.
+
+## Shared database (Supabase)
+
+Without setup the app stores data in each browser only. To keep data online for everyone:
+
+1. Create a free project at supabase.com, open **SQL Editor**, paste `supabase.sql`, and run it.
+2. In **Project Settings -> API**, copy the Project URL and the `anon` public key.
+3. Add them as environment variables (locally in a `.env` file, see `.env.example`; on Vercel in Settings -> Environment Variables):
+   `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Then redeploy.
+
+The first visit seeds the demo data. To reset, delete the row in Table Editor -> `app_state`.

@@ -1,12 +1,19 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { REMOTE, createSync, pick } from './lib/remote'
 import { makeActions } from './lib/actions'
 import { buildSeed, demandMap } from './lib/logic'
 import { todayStr, uid } from './lib/utils'
 
 const KEY = 'reuseu:v2'
+const SESSION_KEY = 'reuseu:session'
 const Ctx = createContext(null)
 
 function load() {
+  if (REMOTE) {
+    let session = null
+    try { session = JSON.parse(localStorage.getItem(SESSION_KEY)) } catch { /* no saved session */ }
+    return { ...pick({}), session }
+  }
   try {
     const raw = localStorage.getItem(KEY)
     if (raw) {
@@ -23,12 +30,30 @@ export function StoreProvider({ children }) {
   const [state, setState] = useState(load)
   const [today, setToday] = useState(todayStr())
   const [toasts, setToasts] = useState([])
+  const [ready, setReady] = useState(!REMOTE)
   const ref = useRef(state)
+
+  const sync = useMemo(
+    () =>
+      REMOTE
+        ? createSync({
+            get: () => ref.current,
+            seed: buildSeed,
+            apply: (cols, first) => {
+              ref.current = { ...ref.current, ...cols }
+              setState(ref.current)
+              if (first) setReady(true)
+            },
+          })
+        : null,
+    []
+  )
 
   const commit = useCallback((next) => {
     ref.current = next
     setState(next)
-  }, [])
+    sync?.touch()
+  }, [sync])
 
   const notify = useCallback((message, kind = 'success') => {
     const id = uid('t')
@@ -38,7 +63,8 @@ export function StoreProvider({ children }) {
 
   useEffect(() => {
     try {
-      localStorage.setItem(KEY, JSON.stringify(state))
+      if (REMOTE) localStorage.setItem(SESSION_KEY, JSON.stringify(state.session))
+      else localStorage.setItem(KEY, JSON.stringify(state))
     } catch {
       notify('Browser storage is full. Remove a listing photo to keep saving changes.', 'error')
     }
@@ -50,6 +76,19 @@ export function StoreProvider({ children }) {
     return () => clearInterval(t)
   }, [])
 
+  // Pull other people's changes (messages, requests, listings) every few seconds.
+  useEffect(() => {
+    if (!sync) return
+    sync.run()
+    const t = setInterval(sync.run, 4000)
+    const onVisible = () => document.visibilityState === 'visible' && sync.run()
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      clearInterval(t)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [sync])
+
   const actions = useMemo(() => makeActions(ref, commit), [commit])
 
   const value = useMemo(() => {
@@ -58,6 +97,7 @@ export function StoreProvider({ children }) {
     const sessionUser = state.session ? usersById[state.session.userId] : null
     return {
       state,
+      ready,
       today,
       user: sessionUser && !sessionUser.suspended ? sessionUser : null,
       userById: (id) => usersById[id],
@@ -68,7 +108,7 @@ export function StoreProvider({ children }) {
       dismissToast: (id) => setToasts((t) => t.filter((x) => x.id !== id)),
       ...actions,
     }
-  }, [state, today, toasts, notify, actions])
+  }, [state, ready, today, toasts, notify, actions])
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }
