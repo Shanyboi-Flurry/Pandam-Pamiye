@@ -159,7 +159,7 @@ export default function AddResource() {
             {form.image ? (
               <div className="relative">
                 <img src={form.image} alt="Listing preview" className="h-56 w-full rounded-lg object-cover" />
-                <button type="button" onClick={() => setForm({ ...form, image: null })} className="absolute right-2 top-2 rounded-full bg-white/90 p-1.5 shadow hover:bg-white" aria-label="Remove photo">
+                <button type="button" onClick={() => setForm({ ...form, image: null })} className="absolute right-2 top-2 rounded-full bg-surface/90 p-1.5 shadow hover:bg-surface" aria-label="Remove photo">
                   <X size={16} />
                 </button>
               </div>
@@ -167,7 +167,7 @@ export default function AddResource() {
               <label className="flex h-48 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 text-sm text-slate-600 hover:border-spruce-400 hover:bg-spruce-50">
                 <ImagePlus size={28} className="text-spruce-500" aria-hidden="true" />
                 <span className="font-semibold">{busy ? 'Processing photo...' : 'Add a photo'}</span>
-                <span className="text-xs">Optional. It is resized and saved in your browser.</span>
+                <span className="text-xs">Optional. It is resized and saved online.</span>
                 <input type="file" accept="image/*" className="sr-only" onChange={onFile} />
               </label>
             )}

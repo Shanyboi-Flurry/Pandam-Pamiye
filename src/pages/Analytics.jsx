@@ -6,12 +6,11 @@ import { useStore } from '../store'
 import { wasteStats, weeklySeries } from '../lib/logic'
 import { CATEGORIES, CO2_PER_KG } from '../lib/constants'
 import { daysBetween, plural } from '../lib/utils'
-import { PageHeader, Section, StatCard } from '../components/ui'
+import { PageHeader, Section, StatCard, useDark } from '../components/ui'
 
 // Reference palette: first three categorical slots, assigned per entity and kept consistent across charts.
-const C = { borrow: '#203a9b', donate: '#d9a21b', swap: '#c8283c', grid: '#e1e0d9', axis: '#898781', ink: '#52514e', bar: '#203a9b' }
-
-const tooltipStyle = { background: '#fcfcfb', border: '1px solid #e1e0d9', borderRadius: 8, fontSize: 13, color: '#0b0b0b' }
+const LIGHT = { borrow: '#1b3278', donate: '#d9a21b', swap: '#c8283c', grid: '#e1e0d9', axis: '#898781', ink: '#52514e', bar: '#1b3278', card: '#fcfcfb', text: '#0b0b0b' }
+const NIGHT = { borrow: '#7b93d1', donate: '#f2c24b', swap: '#ff7a8a', grid: '#22305a', axis: '#8190ab', ink: '#cbd5e1', bar: '#7b93d1', card: '#16223f', text: '#f1f5f9' }
 
 function Group({ title, rows }) {
   return (
@@ -29,6 +28,8 @@ function Group({ title, rows }) {
 }
 
 export default function Analytics() {
+  const C = useDark() ? NIGHT : LIGHT
+  const tooltipStyle = { background: C.card, border: `1px solid ${C.grid}`, borderRadius: 8, fontSize: 13, color: C.text }
   const { state, today, demand, resourceById } = useStore()
   const [table, setTable] = useState(false)
 
@@ -120,9 +121,9 @@ export default function Analytics() {
                   <YAxis allowDecimals={false} stroke={C.axis} tick={{ fill: C.axis, fontSize: 12 }} tickLine={false} axisLine={false} />
                   <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: C.axis, strokeDasharray: '3 3' }} />
                   <Legend iconType="plainline" wrapperStyle={{ fontSize: 13, color: C.ink }} />
-                  <Line type="monotone" dataKey="Borrow" stroke={C.borrow} strokeWidth={2} dot={{ r: 4, strokeWidth: 2, stroke: '#fcfcfb' }} activeDot={{ r: 6 }} />
-                  <Line type="monotone" dataKey="Donate" stroke={C.donate} strokeWidth={2} dot={{ r: 4, strokeWidth: 2, stroke: '#fcfcfb' }} activeDot={{ r: 6 }} />
-                  <Line type="monotone" dataKey="Swap" stroke={C.swap} strokeWidth={2} dot={{ r: 4, strokeWidth: 2, stroke: '#fcfcfb' }} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey="Borrow" stroke={C.borrow} strokeWidth={2} dot={{ r: 4, strokeWidth: 2, stroke: C.card }} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey="Donate" stroke={C.donate} strokeWidth={2} dot={{ r: 4, strokeWidth: 2, stroke: C.card }} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey="Swap" stroke={C.swap} strokeWidth={2} dot={{ r: 4, strokeWidth: 2, stroke: C.card }} activeDot={{ r: 6 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -163,7 +164,7 @@ export default function Analytics() {
                     <span className="shrink-0 text-slate-600">{plural(n, 'request')}</span>
                   </div>
                   <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-100">
-                    <div className="h-full rounded-r bg-[#203a9b]" style={{ width: `${(n / maxTop) * 100}%` }} />
+                    <div className="h-full rounded-r bg-spruce-700 dark:bg-spruce-300" style={{ width: `${(n / maxTop) * 100}%` }} />
                   </div>
                 </li>
               ))}

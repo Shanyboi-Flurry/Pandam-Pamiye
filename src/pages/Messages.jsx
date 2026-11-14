@@ -144,7 +144,7 @@ export default function Messages() {
               const about = m.resourceId ? resourceById(m.resourceId) : null
               return (
                 <div key={m.id} className={cx('flex', mine ? 'justify-end' : 'justify-start')}>
-                  <div className={cx('max-w-[80%] rounded-2xl px-3.5 py-2 text-sm', mine ? 'rounded-br-sm bg-spruce-700 text-white' : 'rounded-bl-sm border border-slate-200 bg-white text-slate-800')}>
+                  <div className={cx('max-w-[80%] rounded-2xl px-3.5 py-2 text-sm', mine ? 'rounded-br-sm bg-spruce-700 text-white' : 'rounded-bl-sm border border-slate-200 bg-surface text-slate-800')}>
                     {about && (
                       <Link to={`/resource/${about.id}`} className={cx('mb-1 block text-xs font-semibold underline', mine ? 'text-marker-yellow' : 'text-spruce-700')}>About: {about.title}</Link>
                     )}
@@ -179,7 +179,7 @@ export default function Messages() {
               />
               <button className="btn-primary h-10" disabled={!text.trim()}><Send size={16} /> Send</button>
             </div>
-            <p className="hint">Enter to send, Shift+Enter for a new line. Messages are stored in this browser only.</p>
+            <p className="hint">Enter to send, Shift+Enter for a new line.</p>
           </form>
         </>
       )}
@@ -189,7 +189,7 @@ export default function Messages() {
   return (
     <>
       <PageHeader title="Messages" subtitle="Talk privately with other members to arrange pickup, ask about condition, or say thanks." />
-      <div className="grid h-[calc(100vh-14rem)] min-h-[420px] gap-4 lg:grid-cols-[320px_1fr]">
+      <div className="grid h-[calc(100vh-14rem)] h-[calc(100dvh-14rem)] min-h-[420px] gap-4 lg:grid-cols-[320px_1fr]">
         {list}
         {chat}
       </div>

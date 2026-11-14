@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { REMOTE, createSync, pick } from './lib/remote'
 import { makeActions } from './lib/actions'
-import { buildSeed, demandMap } from './lib/logic'
+import { applyRoster, buildSeed, demandMap } from './lib/logic'
 import { todayStr, uid } from './lib/utils'
 
 const KEY = 'reuseu:v2'
@@ -18,7 +18,7 @@ function load() {
     const raw = localStorage.getItem(KEY)
     if (raw) {
       const s = JSON.parse(raw)
-      if (s && s.version === 2 && Array.isArray(s.resources)) return { messages: [], ...s }
+      if (s && s.version === 2 && Array.isArray(s.resources)) return applyRoster({ messages: [], ...s })
     }
   } catch {
     /* fall through to a fresh demo dataset */
@@ -39,6 +39,7 @@ export function StoreProvider({ children }) {
         ? createSync({
             get: () => ref.current,
             seed: buildSeed,
+            migrate: applyRoster,
             apply: (cols, first) => {
               ref.current = { ...ref.current, ...cols }
               setState(ref.current)

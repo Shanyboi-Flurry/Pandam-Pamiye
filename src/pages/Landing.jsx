@@ -1,11 +1,12 @@
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  ArrowRight, BarChart3, CalendarDays, Gift, Leaf, Search, ShieldCheck, Sparkles, Store, Trophy, Handshake, PackageCheck, Recycle,
+  ArrowRight, ArrowUp, BarChart3, CalendarDays, Gift, Leaf, Search, ShieldCheck, Sparkles, Store, Trophy, Handshake, PackageCheck, Recycle,
 } from 'lucide-react'
 import { useStore } from '../store'
 import { isPublic, wasteStats } from '../lib/logic'
 import { CATEGORIES, ROLES } from '../lib/constants'
-import { Logo } from '../components/ui'
+import { Logo, ThemeToggle } from '../components/ui'
 
 const PROBLEMS = [
   ['Students buy materials they only need for a week.', 'Borrow it from a classmate for the exact dates you need it.'],
@@ -31,84 +32,178 @@ const FEATURES = [
   { icon: BarChart3, title: 'Sustainability analytics', text: 'Track items shared, demand by category, and waste avoided.' },
 ]
 
+function CountUp({ to }) {
+  const ref = useRef(null)
+  const started = useRef(false)
+  const [n, setN] = useState(0)
+  useEffect(() => {
+    if (started.current || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setN(to)
+      return
+    }
+    let raf
+    const io = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return
+      io.disconnect()
+      started.current = true
+      const t0 = performance.now()
+      const tick = (t) => {
+        const p = Math.min((t - t0) / 1400, 1)
+        setN(Math.round(to * (1 - (1 - p) ** 3)))
+        if (p < 1) raf = requestAnimationFrame(tick)
+      }
+      raf = requestAnimationFrame(tick)
+    })
+    io.observe(ref.current)
+    return () => { io.disconnect(); cancelAnimationFrame(raf) }
+  }, [to])
+  return <span ref={ref}>{n.toLocaleString()}</span>
+}
+
+function ScrollUI() {
+  const [pos, setPos] = useState({ p: 0, show: false })
+  useEffect(() => {
+    const on = () => {
+      const h = document.documentElement
+      const max = h.scrollHeight - h.clientHeight
+      setPos({ p: max > 0 ? h.scrollTop / max : 0, show: h.scrollTop > 500 })
+    }
+    on()
+    window.addEventListener('scroll', on, { passive: true })
+    return () => window.removeEventListener('scroll', on)
+  }, [])
+  return (
+    <>
+      <div className="fixed inset-x-0 top-0 z-50 h-1 origin-left bg-gradient-to-r from-marker-yellow to-spruce-400" style={{ transform: `scaleX(${pos.p})` }} aria-hidden="true" />
+      <button
+        type="button"
+        aria-label="Back to top"
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        className={`fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-spruce-700 text-white shadow-xl transition duration-300 hover:-translate-y-1 hover:bg-spruce-800 ${pos.show ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-4 opacity-0'}`}
+      >
+        <ArrowUp size={20} />
+      </button>
+    </>
+  )
+}
+
+const delay = (i, step = 0.08) => ({ '--d': `${i * step}s` })
+
 export default function Landing() {
-  const { user, state } = useStore()
-    const waste = wasteStats(state)
+  const { state } = useStore()
+  const waste = wasteStats(state)
+
+  useEffect(() => {
+    const io = new IntersectionObserver(
+      (es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target) } }),
+      { threshold: 0.12 }
+    )
+    document.querySelectorAll('.reveal').forEach((el) => io.observe(el))
+    return () => io.disconnect()
+  }, [])
+
+  const stats = [
+    [state.resources.filter(isPublic).length, 'resources listed'],
+    [waste.shares, 'completed shares'],
+    [state.activity.reduce((sum, a) => sum + a.points, 0), 'EcoPoints earned'],
+    [state.users.filter((u) => u.role !== 'admin').length, 'community members'],
+  ]
+
   return (
     <div className="min-h-screen bg-paper">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-        <Logo school />
-        <nav className="hidden items-center gap-6 text-sm font-semibold text-slate-600 md:flex" aria-label="Page sections">
-          <a href="#problem" className="hover:text-spruce-700">Why Pandam Pamiye</a>
-          <a href="#how" className="hover:text-spruce-700">How it works</a>
-          <a href="#features" className="hover:text-spruce-700">Features</a>
-          <a href="#roles" className="hover:text-spruce-700">Who it is for</a>
-        </nav>
-        <div className="flex items-center gap-2">
-          {user ? (
-            <Link to="/dashboard" className="btn-primary">Open dashboard</Link>
-          ) : (
-            <>
-              <Link to="/login" className="btn-ghost">Log in</Link>
-              <Link to="/register" className="btn-primary hidden sm:inline-flex">Sign up</Link>
-            </>
-          )}
+      <ScrollUI />
+      <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-surface/70 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
+          <Logo school />
+          <nav className="hidden items-center gap-6 text-sm font-semibold text-slate-600 md:flex" aria-label="Page sections">
+            {[['#problem', 'Why Pandam Pamiye'], ['#how', 'How it works'], ['#features', 'Features'], ['#roles', 'Who it is for']].map(([h, l]) => (
+              <a key={h} href={h} className="transition-colors hover:text-spruce-700">{l}</a>
+            ))}
+          </nav>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Link to="/login" className="btn-ghost">Log in</Link>
+            <Link to="/register" className="btn-primary hidden sm:inline-flex">Sign up</Link>
+          </div>
         </div>
       </header>
 
-      <section className="hero-gradient">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:py-20">
+      <section className="hero pb-28">
+        <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+          <span className="blob blob-a" />
+          <span className="blob blob-b" />
+          <span className="blob blob-c" />
+        </div>
+        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-14 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:py-24">
           <div>
-            <p className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-marker-yellow ring-1 ring-white/20">
+            <p className="rise mb-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-marker-yellow ring-1 ring-white/20 backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-marker-yellow opacity-75" />
+                <span className="relative h-2 w-2 rounded-full bg-marker-yellow" />
+              </span>
               Angeles University Foundation
             </p>
-            <h1 className="text-4xl font-extrabold leading-[1.05] text-white sm:text-5xl lg:text-6xl">
-              Share more. Waste less. <span className="text-marker-yellow">Grow together.</span>
+            <h1 className="rise text-4xl font-extrabold leading-[1.05] text-white sm:text-5xl lg:text-6xl" style={delay(1, 0.12)}>
+              Share more. Waste less. <span className="shimmer">Grow together.</span>
             </h1>
-            <p className="mt-5 max-w-xl text-lg text-spruce-100">
+            <p className="rise mt-5 max-w-xl text-lg text-spruce-100" style={delay(2, 0.12)}>
               Pandam Pamiye is where students, teachers, and school staff lend, borrow, donate, and swap what they already own. Skip buying something you need for one week.
             </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link to="/register" className="btn-accent !px-5 !py-3 text-base">
-                Create an account <ArrowRight size={18} />
+            <div className="rise mt-8 flex flex-wrap items-center gap-3" style={delay(3, 0.12)}>
+              <Link to="/register" className="btn-accent group !px-6 !py-3 text-base shadow-lg shadow-black/20 transition hover:-translate-y-0.5">
+                Create an account <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
               </Link>
+              <a href="#how" className="btn !px-6 !py-3 text-base text-white ring-1 ring-white/30 transition hover:bg-white/10">See how it works</a>
             </div>
-            <p className="mt-3 text-sm text-spruce-200">Already have an account? <Link to="/login" className="font-semibold text-white underline">Log in</Link></p>
+            <p className="rise mt-4 text-sm text-spruce-200" style={delay(4, 0.12)}>
+              Already have an account? <Link to="/login" className="font-semibold text-white underline">Log in</Link>
+            </p>
           </div>
-          <div className="relative mx-auto grid w-full max-w-md grid-cols-2 gap-4 lg:max-w-none" aria-label="What you can share">
+          <div className="mx-auto grid w-full max-w-md grid-cols-2 gap-4 lg:max-w-none" aria-label="What you can share">
             {CATEGORIES.slice(0, 6).map((c, i) => (
-              <div key={c.id} className={`card flex items-center gap-3 p-4 ${['-rotate-2', 'rotate-1', 'rotate-2', '-rotate-1', '-rotate-1', 'rotate-2'][i]}`}>
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg" style={{ background: `${c.hex}22` }}>
-                  <c.icon size={22} style={{ color: c.hex }} aria-hidden="true" />
-                </span>
-                <span className="text-sm font-bold text-spruce-900">{c.label}</span>
+              <div key={c.id} className={`rise ${i % 2 ? 'sm:translate-y-6' : ''}`} style={delay(i + 2, 0.1)}>
+                <div className="glass bob flex items-center gap-3 p-4" style={delay(i, 0.6)}>
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface shadow-inner">
+                    <c.icon size={22} style={{ color: c.hex }} aria-hidden="true" />
+                  </span>
+                  <span className="text-sm font-bold">{c.label}</span>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6" aria-label="Community totals">
-        <dl className="grid grid-cols-2 gap-6 text-center sm:grid-cols-4">
-          {[
-            [state.resources.filter(isPublic).length, 'resources listed'],
-            [waste.shares, 'completed shares'],
-            [`${waste.kg} kg`, 'goods kept in use'],
-            [state.users.filter((u) => u.role !== 'admin').length, 'community members'],
-          ].map(([v, l]) => (
-            <div key={l}>
-              <dd className="font-display text-3xl font-extrabold text-spruce-700">{v}</dd>
-              <dt className="text-sm text-slate-600">{l}</dt>
+      <section className="relative z-10 mx-auto -mt-14 max-w-6xl px-4 sm:px-6" aria-label="Community totals">
+        <dl className="reveal grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-slate-200 shadow-xl shadow-spruce-900/10 sm:grid-cols-4">
+          {stats.map(([v, l]) => (
+            <div key={l} className="bg-surface p-6 text-center">
+              <dd className="font-display text-3xl font-extrabold text-spruce-700 sm:text-4xl"><CountUp to={v} /></dd>
+              <dt className="mt-1 text-sm text-slate-600">{l}</dt>
             </div>
           ))}
         </dl>
       </section>
 
-      <section id="problem" className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-        <h2 className="max-w-2xl text-3xl font-bold text-spruce-900">Small school problems, one shared fix</h2>
-        <div className="mt-8 divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white">
-          {PROBLEMS.map(([p, s]) => (
-            <div key={p} className="grid gap-2 p-5 md:grid-cols-2 md:gap-8">
+      <div className="overflow-hidden py-10" style={{ WebkitMaskImage: 'linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent)', maskImage: 'linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent)' }} aria-hidden="true">
+        <div className="marquee">
+          {[0, 1].map((g) => (
+            <div key={g} className="flex shrink-0 gap-3 pr-3">
+              {CATEGORIES.map((c) => (
+                <span key={c.id} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-surface px-4 py-2 text-sm font-semibold text-spruce-900 shadow-sm">
+                  <c.icon size={16} style={{ color: c.hex }} /> {c.label}
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <section id="problem" className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+        <h2 className="reveal max-w-2xl text-3xl font-bold text-spruce-900 sm:text-4xl">Small school problems, one shared fix</h2>
+        <div className="mt-8 divide-y divide-slate-200 overflow-hidden rounded-2xl border border-slate-200 bg-surface shadow-sm">
+          {PROBLEMS.map(([p, s], i) => (
+            <div key={p} className="reveal grid gap-2 p-5 md:grid-cols-2 md:gap-8" style={delay(i, 0.06)}>
               <p className="text-slate-600">{p}</p>
               <p className="flex gap-3 font-semibold text-spruce-900">
                 <Recycle size={20} className="mt-0.5 shrink-0 text-spruce-500" aria-hidden="true" />
@@ -117,10 +212,10 @@ export default function Landing() {
             </div>
           ))}
         </div>
-        <ul className="mt-6 flex flex-wrap gap-2" aria-label="Resource categories">
+        <ul className="reveal mt-6 flex flex-wrap gap-2" aria-label="Resource categories">
           {CATEGORIES.map((c) => (
             <li key={c.id}>
-              <Link to={`/marketplace?category=${c.id}`} className={`badge ${c.tint} !px-3 !py-1.5 hover:brightness-95`}>
+              <Link to={`/marketplace?category=${c.id}`} className={`badge ${c.tint} !px-3 !py-1.5 transition hover:-translate-y-0.5 hover:shadow-md`}>
                 <c.icon size={14} aria-hidden="true" /> {c.label}
               </Link>
             </li>
@@ -128,49 +223,45 @@ export default function Landing() {
         </ul>
       </section>
 
-      <section id="how" className="bg-spruce-900 py-14 text-spruce-100">
+      <section id="how" className="hero py-16 text-spruce-100">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <h2 className="text-3xl font-bold text-white">How a loan works</h2>
-          <ol className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <h2 className="reveal text-3xl font-bold text-white sm:text-4xl">How a loan works</h2>
+          <ol className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((s, i) => (
-              <li key={s.title} className="rounded-xl bg-spruce-800 p-5">
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-marker-yellow text-spruce-950">
-                  <s.icon size={20} aria-hidden="true" />
+              <li key={s.title} className="reveal glass p-5" style={delay(i, 0.12)}>
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-marker-yellow text-spruce-950 shadow-lg shadow-black/20">
+                  <s.icon size={22} aria-hidden="true" />
                 </span>
-                <h3 className="mt-4 text-lg font-bold text-white">
-                  {i + 1}. {s.title}
-                </h3>
-                <p className="mt-1 text-sm text-spruce-200">{s.text}</p>
+                <h3 className="mt-4 text-lg font-bold text-white">{i + 1}. {s.title}</h3>
+                <p className="mt-1 text-sm text-spruce-100">{s.text}</p>
               </li>
             ))}
           </ol>
         </div>
       </section>
 
-      <section id="features" className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-        <h2 className="text-3xl font-bold text-spruce-900">Built for a school community</h2>
-        <div className="mt-8 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((f) => (
-            <div key={f.title} className="flex gap-4">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-spruce-100 text-spruce-700">
+      <section id="features" className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+        <h2 className="reveal text-3xl font-bold text-spruce-900 sm:text-4xl">Built for a school community</h2>
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {FEATURES.map((f, i) => (
+            <div key={f.title} className="reveal rounded-2xl border border-slate-200 bg-surface p-6" style={delay(i % 3, 0.1)}>
+              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-spruce-500 to-spruce-700 text-white shadow-md">
                 <f.icon size={22} aria-hidden="true" />
               </span>
-              <div>
-                <h3 className="text-base font-bold text-spruce-900">{f.title}</h3>
-                <p className="mt-1 text-sm text-slate-600">{f.text}</p>
-              </div>
+              <h3 className="mt-4 text-lg font-bold text-spruce-900">{f.title}</h3>
+              <p className="mt-1 text-sm text-slate-600">{f.text}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section id="roles" className="border-t border-slate-200 bg-white py-14">
+      <section id="roles" className="border-t border-slate-200 bg-surface py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <h2 className="text-3xl font-bold text-spruce-900">One platform, four roles</h2>
-          <p className="mt-2 max-w-2xl text-slate-600">The dashboard and tools adapt to who is logged in.</p>
+          <h2 className="reveal text-3xl font-bold text-spruce-900 sm:text-4xl">One platform, four roles</h2>
+          <p className="reveal mt-2 max-w-2xl text-slate-600">The dashboard and tools adapt to who is logged in.</p>
           <dl className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {Object.entries(ROLES).map(([k, r]) => (
-              <div key={k} className="rounded-xl border border-slate-200 p-5">
+            {Object.entries(ROLES).map(([k, r], i) => (
+              <div key={k} className="reveal rounded-2xl border border-slate-200 p-5" style={delay(i, 0.1)}>
                 <dt className="flex items-center gap-2 font-display text-lg font-bold text-spruce-900">
                   {k === 'admin' && <ShieldCheck size={18} className="text-spruce-600" aria-hidden="true" />}
                   {r.label}
@@ -179,12 +270,12 @@ export default function Landing() {
               </div>
             ))}
           </dl>
-          <div className="mt-10 flex flex-wrap items-center justify-between gap-4 rounded-xl bg-marker-yellow p-6">
-            <div>
+          <div className="reveal shine mt-10 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-marker-yellow p-6 sm:p-8">
+            <div className="relative z-10">
               <p className="font-display text-2xl font-bold text-spruce-950">Have something sitting unused?</p>
-              <p className="text-spruce-900">List it in under a minute and earn your first EcoPoints.</p>
+              <p className="text-spruce-950">List it in under a minute and earn your first EcoPoints.</p>
             </div>
-            <Link to="/register" className="btn-primary !px-5 !py-3">Get started</Link>
+            <Link to="/register" className="btn-primary relative z-10 !px-6 !py-3 transition hover:-translate-y-0.5">Get started</Link>
           </div>
         </div>
       </section>
@@ -192,7 +283,7 @@ export default function Landing() {
       <footer className="border-t border-slate-200 py-8 text-center text-sm text-slate-500">
         <Logo school className="justify-center" />
         <p className="mt-3">Share more. Waste less. Grow together.</p>
-        <p className="mt-1">Capstone demo. Accounts and listings are stored only in your browser.</p>
+        <p className="mt-1">Capstone demo. Please do not use a real password.</p>
       </footer>
     </div>
   )

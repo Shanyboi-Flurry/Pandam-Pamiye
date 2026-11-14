@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { Link } from 'react-router-dom'
-import { AlertCircle, CheckCircle2, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { AlertCircle, CheckCircle2, ChevronLeft, ChevronRight, Moon, Sun, X } from 'lucide-react'
 import { CAT, TYPES } from '../lib/constants'
 import { cx, fmtShort, initials, parseISO, toISO } from '../lib/utils'
 import { useStore } from '../store'
@@ -47,6 +47,7 @@ export function PageHeader({ title, subtitle, actions }) {
     <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
       <div>
         <h1 className="text-2xl font-bold text-spruce-900 sm:text-3xl">{title}</h1>
+        <span className="mt-2 block h-1 w-10 rounded-full bg-marker-yellow" />
         {subtitle && <p className="mt-1 max-w-2xl text-sm text-slate-600">{subtitle}</p>}
       </div>
       {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
@@ -91,7 +92,7 @@ export function StatCard({ icon: Icon, label, value, hint, tone = 'spruce' }) {
 
 export function EmptyState({ icon: Icon, title, text, action }) {
   return (
-    <div className="flex flex-col items-center rounded-xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center">
+    <div className="flex flex-col items-center rounded-xl border border-dashed border-slate-300 bg-surface px-6 py-10 text-center">
       {Icon && <Icon size={28} className="mb-3 text-spruce-400" aria-hidden="true" />}
       <p className="font-display text-lg font-bold text-spruce-900">{title}</p>
       {text && <p className="mt-1 max-w-sm text-sm text-slate-600">{text}</p>}
@@ -107,8 +108,8 @@ export function Modal({ title, onClose, children }) {
     return () => document.removeEventListener('keydown', onKey)
   }, [onClose])
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-spruce-950/50 p-4 sm:items-center" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div role="dialog" aria-modal="true" aria-label={title} className="w-full max-w-md rounded-xl bg-white p-5 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-spruce-950/60 p-4 backdrop-blur-sm sm:items-center" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+      <div role="dialog" aria-modal="true" aria-label={title} className="rise w-full max-w-md rounded-2xl bg-surface p-5 shadow-2xl">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold text-spruce-900">{title}</h2>
           <button onClick={onClose} className="rounded p-1 text-slate-500 hover:bg-slate-100" aria-label="Close dialog">
@@ -180,7 +181,7 @@ export function DueStamp({ date, state = 'normal', label = 'Due back' }) {
 export function Logo({ light = false, className, school = false }) {
   return (
     <span className={cx('inline-flex items-center gap-2.5', className)}>
-      <span className={cx('flex shrink-0 items-center justify-center rounded-full', light ? 'h-12 w-12 bg-white' : 'h-12 w-12')}>
+      <span className={cx('flex shrink-0 items-center justify-center rounded-full', light ? 'h-12 w-12 bg-surface' : 'h-12 w-12')}>
         <img src="/auf-seal.png" alt="" className={cx('object-contain', light ? 'h-10 w-10' : 'h-12 w-12')} />
       </span>
       <span className="flex flex-col leading-none">
@@ -207,7 +208,7 @@ export function ResourceThumb({ resource, className, iconSize = 40 }) {
 export function ResourceCard({ resource, availability, owner, reasons }) {
   const type = TYPES[resource.type]
   return (
-    <Link to={`/resource/${resource.id}`} className="card group flex flex-col overflow-hidden transition-shadow hover:shadow-md">
+    <Link to={`/resource/${resource.id}`} className="card group flex flex-col overflow-hidden transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-spruce-900/15">
       <div className="relative">
         <ResourceThumb resource={resource} className="h-36 w-full" />
         <span className={cx('badge absolute left-3 top-3', type.cls)}>{type.tag}</span>
@@ -222,7 +223,7 @@ export function ResourceCard({ resource, availability, owner, reasons }) {
         <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-1">
           <ToneBadge tone={availability.tone}>{availability.label}</ToneBadge>
           {reasons?.slice(0, 2).map((r) => (
-            <span key={r} className="badge bg-marker-yellow/60 text-spruce-900">
+            <span key={r} className="badge bg-marker-yellow/60 text-spruce-950">
               {r}
             </span>
           ))}
@@ -281,7 +282,7 @@ export function MonthCalendar({ today, renderCell, cellClass, onDayClick, compac
         ))}
         {cells.map((c) => {
           const base = cx(
-            'relative bg-white text-left',
+            'relative bg-surface text-left',
             compact ? 'h-10 p-1' : 'min-h-[88px] p-1.5',
             !c.inMonth && 'bg-slate-50 text-slate-400',
             c.iso === today && 'ring-2 ring-inset ring-spruce-500',
@@ -305,5 +306,25 @@ export function MonthCalendar({ today, renderCell, cellClass, onDayClick, compac
         })}
       </div>
     </div>
+  )
+}
+
+const onTheme = (cb) => {
+  window.addEventListener('themechange', cb)
+  return () => window.removeEventListener('themechange', cb)
+}
+export const useDark = () => useSyncExternalStore(onTheme, () => document.documentElement.classList.contains('dark'))
+
+export function ThemeToggle({ className }) {
+  const dark = useDark()
+  const toggle = () => {
+    document.documentElement.classList.toggle('dark', !dark)
+    try { localStorage.setItem('reuseu:theme', dark ? 'light' : 'dark') } catch { /* private mode */ }
+    window.dispatchEvent(new Event('themechange'))
+  }
+  return (
+    <button type="button" onClick={toggle} aria-pressed={dark} aria-label={dark ? 'Switch to light mode' : 'Switch to night mode'} title={dark ? 'Light mode' : 'Night mode'} className={cx('btn-ghost !px-2.5', className)}>
+      {dark ? <Sun size={18} aria-hidden="true" /> : <Moon size={18} aria-hidden="true" />}
+    </button>
   )
 }

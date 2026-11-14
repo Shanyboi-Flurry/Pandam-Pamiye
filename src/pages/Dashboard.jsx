@@ -213,7 +213,7 @@ export default function Dashboard() {
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-marker-yellow p-5">
             <div>
               <p className="font-display text-xl font-bold text-spruce-950">Share an educational resource</p>
-              <p className="text-sm text-spruce-900">Lab kits, classroom sets, and reference books can help other classes too.</p>
+              <p className="text-sm text-spruce-950">Lab kits, classroom sets, and reference books can help other classes too.</p>
             </div>
             <Link to="/add?type=lend" className="btn-primary">Add resource</Link>
           </div>

@@ -1,4 +1,5 @@
 import { CAT, LEVELS, BADGES, CO2_PER_KG } from './constants'
+import { applyDemo } from './demo'
 import { addDays, daysBetween, fmtShort, overlaps, todayStr } from './utils'
 
 /* ---------- Availability + conflict detection ---------- */
@@ -280,15 +281,34 @@ export function remindersFor(state, user, today) {
 
 // One starter account per role. Credentials are listed in README.md.
 const ACCOUNTS = [
-  { id: 'u_admin', name: 'Admin User', email: 'admin@reuseu.edu', password: 'Admin@123', role: 'admin', dept: 'Office of the Principal' },
-  { id: 'u_teacher', name: 'Sample Teacher', email: 'teacher@reuseu.edu', password: 'Teacher@123', role: 'teacher', dept: 'Science Department' },
-  { id: 'u_staff', name: 'Sample Staff', email: 'staff@reuseu.edu', password: 'Staff@123', role: 'staff', dept: 'Property Custodian' },
-  { id: 'u_student', name: 'Sample Student', email: 'student@reuseu.edu', password: 'Student@123', role: 'student', dept: 'Grade 11' },
+  { id: 'u_admin', name: 'Elena Villanueva', email: 'admin@reuseu.edu', password: 'Admin@123', role: 'admin', dept: 'Office of the Principal' },
+  { id: 'u_teacher', name: 'Ramon Dizon', email: 'teacher@reuseu.edu', password: 'Teacher@123', role: 'teacher', dept: 'Science Department' },
+  { id: 'u_staff', name: 'Josefina Manalo', email: 'staff@reuseu.edu', password: 'Staff@123', role: 'staff', dept: 'Property Custodian' },
+  { id: 'u_student', name: 'Paolo Gutierrez', email: 'student@reuseu.edu', password: 'Student@123', role: 'student', dept: 'BS Information Technology - 2nd year' },
 ]
+
+// Former demo names, so existing databases get the new names too (a name edited since is left alone).
+const RENAMES = { u_admin: ['Admin User', 'Elena Villanueva'], u_teacher: ['Sample Teacher', 'Ramon Dizon'], u_staff: ['Sample Staff', 'Josefina Manalo'], u_student: ['Sample Student', 'Paolo Gutierrez'] }
+const NEW_STUDENTS = [
+  { id: 'u_kurt', name: 'Kurt Justine Sarmiento', email: 'sarmiento.kurtjustine@student.auf.edu.ph', password: 'Student@123', role: 'student', dept: '' },
+  { id: 'u_justin', name: 'Justin Mandapat', email: 'mandapat.justin@student.auf.edu.ph', password: 'Student@123', role: 'student', dept: '' },
+]
+
+// Safe to run on every load: adds what is missing once and returns the same object when nothing changed.
+// Renames the old demo users, adds the new students, then the sample records and EcoPoints (src/lib/demo.js).
+export function applyRoster(data) {
+  const named = (u) => (RENAMES[u.id]?.[0] === u.name ? { ...u, name: RENAMES[u.id][1] } : u)
+  const users = data.users.map((u) => (u.id === 'u_student' && u.dept === 'Grade 11' ? { ...named(u), dept: 'BS Information Technology - 2nd year' } : named(u)))
+  NEW_STUDENTS.forEach((a) => {
+    if (!users.some((u) => u.email.toLowerCase() === a.email)) users.push({ ...a, bio: '', joined: todayStr(), suspended: false })
+  })
+  const same = users.length === data.users.length && users.every((u, i) => u === data.users[i])
+  return applyDemo(same ? data : { ...data, users })
+}
 
 export function buildSeed() {
   const today = todayStr()
-  return {
+  return applyRoster({
     version: 2,
     session: null,
     users: ACCOUNTS.map((a) => ({ ...a, bio: '', joined: today, suspended: false })),
@@ -298,5 +318,5 @@ export function buildSeed() {
     exchanges: [],
     messages: [],
     activity: [],
-  }
+  })
 }

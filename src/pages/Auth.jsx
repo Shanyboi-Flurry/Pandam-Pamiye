@@ -3,20 +3,21 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../store'
 import { ROLES } from '../lib/constants'
 import { cx } from '../lib/utils'
-import { Logo } from '../components/ui'
+import { Logo, ThemeToggle } from '../components/ui'
 
 function Shell({ title, subtitle, children }) {
   return (
     <div className="grid min-h-screen lg:grid-cols-[1fr_1.1fr]">
-      <div className="hero-gradient hidden flex-col justify-between p-10 lg:flex">
+      <div className="hero hidden flex-col justify-between p-10 lg:flex">
         <Link to="/"><Logo light school /></Link>
         <div>
           <p className="font-display text-4xl font-extrabold leading-tight text-white">Share more. Waste less. <span className="text-marker-yellow">Grow together.</span></p>
           <p className="mt-4 max-w-sm text-spruce-100">Borrow the calculator, lend the projector, give away the notebooks you never used.</p>
         </div>
-        <p className="text-sm text-spruce-200">Data stays in this browser.</p>
+        <p className="text-sm text-spruce-200">Your listings and messages are saved online.</p>
       </div>
-      <div className="flex items-center justify-center bg-white px-4 py-10">
+      <div className="relative flex items-center justify-center bg-surface px-4 py-10">
+        <ThemeToggle className="absolute right-4 top-4" />
         <div className="w-full max-w-md">
           <Link to="/" className="mb-6 inline-block lg:hidden"><Logo school /></Link>
           <h1 className="text-3xl font-bold text-spruce-900">{title}</h1>
@@ -109,8 +110,8 @@ export function Register() {
           <input id="remail" type="email" autoComplete="email" className="input" value={form.email} onChange={set('email')} required />
         </div>
         <div>
-          <label htmlFor="dept" className="label">{form.role === 'student' ? 'Grade and section' : 'Department'}</label>
-          <input id="dept" className="input" placeholder={form.role === 'student' ? 'Grade 11 - Curie' : 'Science Department'} value={form.dept} onChange={set('dept')} />
+          <label htmlFor="dept" className="label">{form.role === 'student' ? 'Course and year' : 'Department'}</label>
+          <input id="dept" className="input" placeholder={form.role === 'student' ? 'BS Nursing - 2nd year' : 'Science Department'} value={form.dept} onChange={set('dept')} />
         </div>
         <div>
           <label htmlFor="rpass" className="label">Password</label>

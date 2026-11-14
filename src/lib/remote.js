@@ -43,8 +43,9 @@ function mergeCol(key, server, base, mine) {
 export const mergeState = (server, base, mine) =>
   Object.fromEntries(COLS.map((k) => [k, mergeCol(k, server[k] || [], base[k] || [], mine[k] || [])]))
 
-// get() returns the current app state, apply(cols, first) stores merged data, seed() builds the starter data.
-export function createSync({ get, apply, seed }) {
+// get() returns the current app state, apply(cols, first) stores merged data, seed() builds the starter data,
+// migrate(data) tops up an existing database (returns the same object when nothing changed).
+export function createSync({ get, apply, seed, migrate = (d) => d }) {
   let base = null
   let version = 0
   let dirty = false
@@ -62,7 +63,10 @@ export function createSync({ get, apply, seed }) {
           if (!row) { await insertRow(pick(seed())); row = await getRow() }
           base = row.data
           version = row.version
-          apply(pick(base), true)
+          const start = pick(base)
+          const mine = migrate(start)
+          apply(mine, true)
+          if (mine !== start) { dirty = true; again = true }
           continue
         }
         const remoteVersion = await getVersion()

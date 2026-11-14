@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useStore } from './store'
 import Layout from './components/Layout'
@@ -27,10 +28,22 @@ function RequireAuth({ children, role }) {
   return children
 }
 
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
+
+function ScrollToTop() {
+  const { pathname, hash } = useLocation()
+  useEffect(() => {
+    if (!hash) window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }, [pathname, hash])
+  return null
+}
+
 export default function App() {
   const { ready } = useStore()
   if (!ready) return <p className="p-10 text-center text-sm text-slate-600">Connecting to the database…</p>
   return (
+    <>
+    <ScrollToTop />
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
@@ -55,5 +68,6 @@ export default function App() {
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </>
   )
 }

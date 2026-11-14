@@ -8,7 +8,7 @@ import { useStore } from '../store'
 import { remindersFor, userStats } from '../lib/logic'
 import { ROLES } from '../lib/constants'
 import { cx } from '../lib/utils'
-import { Avatar, Toasts, Logo } from './ui'
+import { Avatar, Toasts, Logo, ThemeToggle } from './ui'
 
 const LISTINGS_LABEL = { student: 'My listings', teacher: 'My shared resources', staff: 'School resources', admin: 'My listings' }
 
@@ -67,7 +67,7 @@ function Notifications({ rem }) {
         {rem.total > 0 && <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-marker-coral px-1 text-[11px] font-bold text-white">{rem.total}</span>}
       </button>
       {open && (
-        <div className="absolute right-0 z-40 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
+        <div className="absolute right-0 z-40 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-200 bg-surface p-2 shadow-xl">
           {items.length === 0 ? (
             <p className="px-3 py-4 text-sm text-slate-600">You are all caught up. No reminders right now.</p>
           ) : (
@@ -91,7 +91,6 @@ export default function Layout() {
   const navigate = useNavigate()
 
   useEffect(() => { setDrawer(false) }, [pathname])
-  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
 
   const rem = remindersFor(state, user, today)
   const points = userStats(state, user.id).points
@@ -105,23 +104,24 @@ export default function Layout() {
   const nav = buildNav(user.role)
 
   const sidebar = (
-    <div className="flex h-full flex-col bg-spruce-900 text-spruce-100">
-      <div className="flex items-center justify-between px-5 py-5">
+    <div className="sidebar-bg relative flex h-full flex-col overflow-hidden text-spruce-100 shadow-2xl shadow-spruce-950/30">
+      <span className="blob blob-b !left-[-120px] !top-[-120px] !bottom-auto !h-72 !w-72 !opacity-25" aria-hidden="true" />
+      <div className="relative flex items-center justify-between px-5 py-5">
         <Link to="/dashboard" aria-label="Pandam Pamiye dashboard">
           <Logo light school />
         </Link>
-        <button className="rounded p-1 text-spruce-200 hover:bg-spruce-800 lg:hidden" onClick={() => setDrawer(false)} aria-label="Close menu">
+        <button className="rounded p-1 text-spruce-200 hover:bg-white/10 lg:hidden" onClick={() => setDrawer(false)} aria-label="Close menu">
           <X size={20} />
         </button>
       </div>
-      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 pb-4" aria-label="Main">
+      <nav className="relative flex-1 space-y-0.5 overflow-y-auto px-3 pb-4" aria-label="Main">
         {nav.map((n) => (
           <NavLink
             key={n.to}
             to={n.to}
             end={n.to === '/add'}
             className={({ isActive }) =>
-              cx('flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition-colors', isActive ? 'bg-marker-yellow text-spruce-950' : 'hover:bg-spruce-800')
+              cx('flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition duration-200', isActive ? 'bg-marker-yellow text-spruce-950 shadow-lg shadow-black/25' : 'hover:translate-x-1 hover:bg-white/10')
             }
           >
             <n.icon size={18} aria-hidden="true" />
@@ -130,15 +130,15 @@ export default function Layout() {
           </NavLink>
         ))}
       </nav>
-      <div className="border-t border-spruce-800 p-3">
-        <Link to="/profile" className="flex items-center gap-3 rounded-lg p-2 hover:bg-spruce-800">
+      <div className="relative border-t border-white/10 p-3">
+        <Link to="/profile" className="flex items-center gap-3 rounded-lg p-2 hover:bg-white/10">
           <Avatar name={user.name} />
           <span className="min-w-0 flex-1">
             <span className="block truncate text-sm font-semibold text-white">{user.name}</span>
             <span className="block text-xs text-spruce-300">{ROLES[user.role].label}</span>
           </span>
         </Link>
-        <button onClick={() => { logout(); navigate('/') }} className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-spruce-200 hover:bg-spruce-800">
+        <button onClick={() => { logout(); navigate('/') }} className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-spruce-200 hover:bg-white/10">
           <LogOut size={18} aria-hidden="true" /> Log out
         </button>
       </div>
@@ -146,7 +146,11 @@ export default function Layout() {
   )
 
   return (
-    <div className="min-h-screen">
+    <div className="isolate min-h-screen">
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
+        <span className="blob blob-b !opacity-[.13]" />
+        <span className="blob blob-c !opacity-[.09]" />
+      </div>
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 lg:block">{sidebar}</aside>
       {drawer && (
         <div className="fixed inset-0 z-50 lg:hidden">
@@ -155,20 +159,23 @@ export default function Layout() {
         </div>
       )}
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-slate-200 bg-paper/90 px-4 py-3 backdrop-blur sm:px-6">
+        <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-slate-200/70 bg-surface/70 px-4 py-3 backdrop-blur-xl sm:px-6">
           <button className="btn-ghost !px-2.5 lg:hidden" onClick={() => setDrawer(true)} aria-label="Open menu">
             <Menu size={18} />
           </button>
           <div className="flex-1" />
           {user.role !== 'admin' && (
-            <Link to="/ecopoints" className="flex items-center gap-1.5 rounded-lg bg-marker-yellow/70 px-3 py-2 text-sm font-bold text-spruce-950 hover:bg-marker-yellow">
+            <Link to="/ecopoints" className="flex items-center gap-1.5 rounded-xl bg-marker-yellow/80 px-3 py-2 text-sm font-bold text-spruce-950 shadow-sm transition hover:-translate-y-px hover:bg-marker-yellow hover:shadow-md">
               <Leaf size={16} aria-hidden="true" /> {points} EcoPoints
             </Link>
           )}
+          <ThemeToggle />
           <Notifications rem={rem} />
         </header>
         <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-          <Outlet />
+          <div key={pathname} className="page-in">
+            <Outlet />
+          </div>
         </main>
       </div>
       <Toasts />

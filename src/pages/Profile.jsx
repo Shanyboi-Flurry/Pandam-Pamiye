@@ -42,7 +42,7 @@ export default function Profile() {
               <input id="pe" className="input bg-slate-50" value={user.email} readOnly />
             </div>
             <div>
-              <label htmlFor="pd" className="label">{user.role === 'student' ? 'Grade and section' : 'Department'}</label>
+              <label htmlFor="pd" className="label">{user.role === 'student' ? 'Course and year' : 'Department'}</label>
               <input id="pd" className="input" value={form.dept} onChange={set('dept')} />
             </div>
             <div>

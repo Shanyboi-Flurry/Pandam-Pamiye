@@ -52,3 +52,17 @@ Without setup the app stores data in each browser only. To keep data online for 
    `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Then redeploy.
 
 The first visit seeds the demo data. To reset, delete the row in Table Editor -> `app_state`.
+
+## Night mode
+
+The Sun/Moon button (top bar, login page, landing page) switches themes and remembers the choice; the first visit follows the device setting. Theme colours are defined once in `src/index.css` (`:root` for light, `.dark` for night) and wired into `tailwind.config.js`, so existing classes such as `bg-surface`, `text-slate-600` and `bg-sky-100` adapt automatically. When adding a new `text-<colour>-600/700/800/900` class on a light surface, night mode already handles it for the colours used here.
+
+## Demo accounts
+
+Staff and demo logins (password in brackets): admin@reuseu.edu (Admin@123), teacher@reuseu.edu (Teacher@123), staff@reuseu.edu (Staff@123), student@reuseu.edu (Student@123).
+Students added with starting EcoPoints use the `surname.firstname@student.auf.edu.ph` pattern and the password `Student@123`: Kurt Justine Sarmiento (315), Justin Mandapat (165). Mikaella Andrea M. Bungay (60) keeps her own registered account; the points are attached by email.
+Roster changes live in `applyRoster` in `src/lib/logic.js`; it runs on every load and only adds what is missing, so it is safe for existing data.
+
+## Sample data
+
+`src/lib/demo.js` adds realistic sample records once (listings, completed loans, donations and swaps over the last two months, messages, and pending items: 5 listings waiting for the administrator, plus borrow, claim and swap requests for owners to answer). Every record has a fixed id, so it is never added twice and anything changed later stays changed. To reset the demo, delete the row in Supabase (Table Editor -> `app_state`) and reload the site.

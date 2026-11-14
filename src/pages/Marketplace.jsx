@@ -81,7 +81,7 @@ export default function Marketplace() {
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="text-slate-600">Try:</span>
             {EXAMPLES.map((ex) => (
-              <button key={ex} onClick={() => setQ(ex)} className="badge bg-marker-yellow/60 !px-3 !py-1 text-spruce-900 hover:bg-marker-yellow">
+              <button key={ex} onClick={() => setQ(ex)} className="badge bg-marker-yellow/60 !px-3 !py-1 text-spruce-950 hover:bg-marker-yellow">
                 {ex}
               </button>
             ))}

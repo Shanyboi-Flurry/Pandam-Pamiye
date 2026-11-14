@@ -4,11 +4,21 @@ import { badgesFor, levelFor, userStats } from '../lib/logic'
 import { LEVELS, POINT_RULES } from '../lib/constants'
 import { cx, fmtDate } from '../lib/utils'
 import { PageHeader, Section } from '../components/ui'
+import { GrowthScene } from '../components/GrowthScene'
+
+const SKY = [
+  'linear-gradient(#0b1a48, #12306e)',
+  'linear-gradient(#12306e, #1b5a8a)',
+  'linear-gradient(#1b5a8a, #2a86a8)',
+  'linear-gradient(#2a86a8, #58b8c8)',
+  'linear-gradient(#3a9bc4, #9bdcf0)',
+]
 
 export default function EcoPoints() {
   const { user, state } = useStore()
   const stats = userStats(state, user.id)
   const lvl = levelFor(stats.points)
+  const stage = LEVELS.findIndex((l) => l.name === lvl.current.name)
   const badges = badgesFor(stats)
   const history = state.activity.filter((a) => a.userId === user.id).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 12)
 
@@ -17,20 +27,40 @@ export default function EcoPoints() {
       <PageHeader title="EcoPoints" subtitle="Points reward you for keeping things in use. Every completed loan, donation, swap, and on-time return counts." />
 
       <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
-        <div className="card bg-spruce-900 p-6 text-white">
-          <p className="text-sm font-semibold text-spruce-200">Your total</p>
-          <p className="mt-1 font-display text-6xl font-extrabold text-marker-yellow">{stats.points}</p>
-          <p className="mt-1 text-lg font-bold">{lvl.current.name}</p>
-          <div className="mt-4 h-3 overflow-hidden rounded-full bg-spruce-700" role="progressbar" aria-valuenow={lvl.progress} aria-valuemin={0} aria-valuemax={100} aria-label="Progress to next level">
-            <div className="h-full rounded-full bg-marker-yellow" style={{ width: `${lvl.progress}%` }} />
+        <div className="card relative overflow-hidden bg-spruce-900 p-6 text-white">
+          <div className="grid items-center gap-6 sm:grid-cols-[1fr_auto]">
+            <div>
+              <p className="text-sm font-semibold text-spruce-200">Your total</p>
+              <p className="mt-1 font-display text-6xl font-extrabold text-marker-yellow">{stats.points}</p>
+              <p className="mt-1 text-lg font-bold">
+                {lvl.current.name} <span className="ml-1 text-xs font-semibold text-spruce-300">Stage {stage + 1} of {LEVELS.length}</span>
+              </p>
+              <div className="mt-4 h-3 overflow-hidden rounded-full bg-spruce-700" role="progressbar" aria-valuenow={lvl.progress} aria-valuemin={0} aria-valuemax={100} aria-label="Progress to next level">
+                <div className="h-full rounded-full bg-marker-yellow transition-all duration-1000" style={{ width: `${lvl.progress}%` }} />
+              </div>
+              <p className="mt-2 text-sm text-spruce-200">{lvl.next ? `${lvl.toNext} more points to reach ${lvl.next.name}.` : 'You reached the highest level.'}</p>
+            </div>
+            <div className="mx-auto h-[210px] w-[210px] rounded-2xl p-2 ring-1 ring-white/15" style={{ background: SKY[stage] }}>
+              <GrowthScene key={stage} stage={stage} />
+            </div>
           </div>
-          <p className="mt-2 text-sm text-spruce-200">{lvl.next ? `${lvl.toNext} more points to reach ${lvl.next.name}.` : 'You reached the highest level.'}</p>
-          <ol className="mt-5 flex flex-wrap gap-2 text-xs">
-            {LEVELS.map((l) => (
-              <li key={l.name} className={cx('rounded-full px-2.5 py-1 font-semibold', stats.points >= l.min ? 'bg-marker-yellow text-spruce-950' : 'bg-spruce-800 text-spruce-300')}>
-                {l.name} {l.min}+
-              </li>
-            ))}
+          <ol className="mt-7 grid grid-cols-5 gap-1 text-center" aria-label="Growth path">
+            {LEVELS.map((l, i) => {
+              const reached = stats.points >= l.min
+              return (
+                <li key={l.name} className="relative flex flex-col items-center">
+                  {i < LEVELS.length - 1 && (
+                    <span className={cx('absolute left-1/2 top-7 h-0.5 w-full', stats.points >= LEVELS[i + 1].min ? 'bg-marker-yellow' : 'bg-white/15')} aria-hidden="true" />
+                  )}
+                  <span className={cx('relative z-10 flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-spruce-800', i === stage ? 'ring-2 ring-marker-yellow' : reached && 'ring-1 ring-white/25')}>
+                    <GrowthScene compact stage={i} className={cx('h-12 w-12', !reached && 'opacity-30 grayscale')} />
+                  </span>
+                  <span className={cx('mt-2 text-xs font-bold', reached ? 'text-white' : 'text-spruce-400')}>{l.name}</span>
+                  <span className="text-[11px] text-spruce-300">{l.min}+</span>
+                  {i === stage && <span className="mt-1 rounded-full bg-marker-yellow px-2 py-0.5 text-[10px] font-bold text-spruce-950">Current</span>}
+                </li>
+              )
+            })}
           </ol>
         </div>
 
