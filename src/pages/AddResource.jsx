@@ -139,7 +139,7 @@ export default function AddResource() {
               <div>
                 <label htmlFor="tags" className="label">Tags</label>
                 <input id="tags" className="input" value={form.tags} onChange={set('tags')} placeholder="calculator, math, exam" />
-                <p className="hint">Separate with commas. Tags help Smart Match find your listing.</p>
+                <p className="hint">Separate with commas. Tags help people find your listing.</p>
               </div>
               {canMarkSchool && (
                 <label className="flex items-start gap-3 rounded-lg bg-spruce-50 p-3 text-sm">

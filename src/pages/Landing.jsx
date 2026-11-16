@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  ArrowRight, ArrowUp, BarChart3, CalendarDays, Gift, Leaf, Search, ShieldCheck, Sparkles, Store, Trophy, Handshake, PackageCheck, Recycle,
+  ArrowRight, ArrowUp, CalendarDays, Gift, Leaf, MessageSquare, Search, ShieldCheck, Store, Trophy, Handshake, PackageCheck, Recycle,
 } from 'lucide-react'
 import { useStore } from '../store'
 import { isPublic, wasteStats } from '../lib/logic'
@@ -17,7 +17,7 @@ const PROBLEMS = [
 ]
 
 const STEPS = [
-  { icon: Search, title: 'Find what you need', text: 'Search the resources or describe your need and let Smart Match suggest items.' },
+  { icon: Search, title: 'Find what you need', text: 'Search the resources by title, tag, or owner and filter by category.' },
   { icon: Handshake, title: 'Send a request', text: 'Pick your dates. Overlapping reservations are blocked before you send.' },
   { icon: PackageCheck, title: 'Meet and share', text: 'The owner approves. You arrange a pickup on campus.' },
   { icon: Leaf, title: 'Return and earn', text: 'Return on time and both of you earn EcoPoints and badges.' },
@@ -27,9 +27,8 @@ const FEATURES = [
   { icon: Store, title: 'Resource sharing', text: 'Filter by category, condition, type, and availability.' },
   { icon: CalendarDays, title: 'Availability calendar', text: 'See booked dates and upcoming returns at a glance.' },
   { icon: Gift, title: 'Donation and exchange hub', text: 'Give things away or trade for what you need.' },
-  { icon: Sparkles, title: 'Smart Match', text: 'Describe your need in plain words and get ranked suggestions.' },
+  { icon: MessageSquare, title: 'Campus messaging', text: 'Chat with other students, teachers, and staff around school to arrange pickups.' },
   { icon: Trophy, title: 'EcoPoints and badges', text: 'Earn points for lending, donating, and returning on time.' },
-  { icon: BarChart3, title: 'Sustainability analytics', text: 'Track items shared, demand by category, and waste avoided.' },
 ]
 
 function CountUp({ to }) {
@@ -87,6 +86,11 @@ function ScrollUI() {
   )
 }
 
+const toTop = (e) => {
+  e.preventDefault()
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
 const delay = (i, step = 0.08) => ({ '--d': `${i * step}s` })
 
 export default function Landing() {
@@ -114,7 +118,7 @@ export default function Landing() {
       <ScrollUI />
       <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-surface/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
-          <Logo school />
+          <a href="/" onClick={toTop} aria-label="Pandam Pamiye, back to top"><Logo school /></a>
           <nav className="hidden items-center gap-6 text-sm font-semibold text-slate-600 md:flex" aria-label="Page sections">
             {[['#problem', 'Why Pandam Pamiye'], ['#how', 'How it works'], ['#features', 'Features'], ['#roles', 'Who it is for']].map(([h, l]) => (
               <a key={h} href={h} className="transition-colors hover:text-spruce-700">{l}</a>
@@ -242,9 +246,9 @@ export default function Landing() {
 
       <section id="features" className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
         <h2 className="reveal text-3xl font-bold text-spruce-900 sm:text-4xl">Built for a school community</h2>
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 flex flex-wrap justify-center gap-5">
           {FEATURES.map((f, i) => (
-            <div key={f.title} className="reveal rounded-2xl border border-slate-200 bg-surface p-6" style={delay(i % 3, 0.1)}>
+            <div key={f.title} className="reveal w-full rounded-2xl border border-slate-200 bg-surface p-6 sm:w-[calc(50%-0.625rem)] lg:w-[calc(33.333%-0.84rem)]" style={delay(i % 3, 0.1)}>
               <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-spruce-500 to-spruce-700 text-white shadow-md">
                 <f.icon size={22} aria-hidden="true" />
               </span>
@@ -281,7 +285,7 @@ export default function Landing() {
       </section>
 
       <footer className="border-t border-slate-200 py-8 text-center text-sm text-slate-500">
-        <Logo school className="justify-center" />
+        <a href="/" onClick={toTop} aria-label="Pandam Pamiye, back to top" className="inline-block"><Logo school className="justify-center" /></a>
         <p className="mt-3">Share more. Waste less. Grow together.</p>
         <p className="mt-1">Capstone demo. Please do not use a real password.</p>
       </footer>

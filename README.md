@@ -27,7 +27,7 @@ The app starts empty apart from these four accounts. New members can also regist
 3. Approved listings go live in the marketplace, donations and exchanges, and the owner earns EcoPoints.
 4. Rejected listings show the reason to the owner. Editing and saving resubmits them for review.
 
-The administrator account only reviews listings (plus a read-only marketplace and analytics view).
+The administrator account only reviews listings (plus a read-only marketplace view).
 
 ## Messages
 Members can send each other private messages (Messages page, or the "Message" button on any resource). Unread messages show as a badge in the sidebar and the bell. Administrators do not use messaging.

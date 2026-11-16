@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
-  AlertTriangle, BarChart3, Bell, CalendarDays, ClipboardList, Clock, Gift, Leaf, LayoutDashboard, LogOut, Menu, Package,
+  AlertTriangle, Bell, CalendarDays, ClipboardList, Clock, Gift, Leaf, LayoutDashboard, LogOut, Menu, Package,
   PlusCircle, Repeat, ShieldCheck, Store, Trophy, X, Inbox, MessageSquare,
 } from 'lucide-react'
 import { useStore } from '../store'
@@ -18,7 +18,6 @@ function buildNav(role) {
       { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { to: '/admin', label: 'Listing approvals', icon: ShieldCheck, badge: 'approvals' },
       { to: '/marketplace', label: 'Resources', icon: Store },
-      { to: '/analytics', label: 'Analytics', icon: BarChart3 },
     ]
   }
   return [
@@ -33,7 +32,6 @@ function buildNav(role) {
     { to: '/calendar', label: 'Calendar', icon: CalendarDays },
     { to: '/ecopoints', label: 'EcoPoints', icon: Leaf },
     { to: '/leaderboard', label: 'Leaderboard', icon: Trophy },
-    { to: '/analytics', label: 'Analytics', icon: BarChart3 },
   ]
 }
 

@@ -15,7 +15,6 @@ import Exchanges from './pages/Exchanges'
 import CalendarPage from './pages/CalendarPage'
 import EcoPoints from './pages/EcoPoints'
 import Leaderboard from './pages/Leaderboard'
-import Analytics from './pages/Analytics'
 import Admin from './pages/Admin'
 import Messages from './pages/Messages'
 import Profile from './pages/Profile'
@@ -61,7 +60,6 @@ export default function App() {
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/ecopoints" element={<EcoPoints />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/analytics" element={<Analytics />} />
         <Route path="/messages" element={<Messages />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/admin" element={<RequireAuth role="admin"><Admin /></RequireAuth>} />

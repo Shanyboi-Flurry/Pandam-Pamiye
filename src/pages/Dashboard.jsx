@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { AlertTriangle, ArrowRight, Clock, Gift, Inbox, Leaf, Package, PlusCircle, Repeat, Search, Store, Users, ShieldCheck, Truck, GraduationCap } from 'lucide-react'
 import { useStore } from '../store'
-import { availabilityOf, canManage, daysOverdue, isOverdue, levelFor, recommendFor, remindersFor, userStats } from '../lib/logic'
+import { availabilityOf, canManage, daysOverdue, isOverdue, recommendFor, remindersFor, userStats } from '../lib/logic'
 import { ROLES } from '../lib/constants'
 import { fmtShort, plural, relDays } from '../lib/utils'
 import { Avatar, EmptyState, PageHeader, Section, StatCard, ToneBadge, ResourceCard } from '../components/ui'
@@ -58,22 +58,6 @@ function Recommended({ user }) {
           ))}
         </div>
       )}
-    </Section>
-  )
-}
-
-function EcoSnapshot({ stats }) {
-  const lvl = levelFor(stats.points)
-  return (
-    <Section title="Your EcoPoints" action={<Link to="/ecopoints" className="text-sm font-semibold text-spruce-700 hover:underline">Details</Link>}>
-      <div className="flex items-baseline gap-2">
-        <span className="font-display text-4xl font-extrabold text-spruce-800">{stats.points}</span>
-        <span className="text-sm font-semibold text-slate-600">{lvl.current.name}</span>
-      </div>
-      <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-valuenow={lvl.progress} aria-valuemin={0} aria-valuemax={100} aria-label="Progress to next level">
-        <div className="h-full rounded-full bg-marker-yellow" style={{ width: `${lvl.progress}%` }} />
-      </div>
-      <p className="mt-2 text-sm text-slate-600">{lvl.next ? `${lvl.toNext} points to reach ${lvl.next.name}.` : 'You reached the top level. Keep sharing.'}</p>
     </Section>
   )
 }
@@ -183,7 +167,7 @@ export default function Dashboard() {
     student: [['/marketplace', Search, 'Find a resource'], ['/add', PlusCircle, 'Lend something']],
     teacher: [['/add?type=lend', PlusCircle, 'Share a resource'], ['/marketplace', Search, 'Browse resources']],
     staff: [['/add', PlusCircle, 'Add school resource'], ['/listings', Package, 'Manage resources']],
-    admin: [['/admin', ShieldCheck, 'Review listings'], ['/analytics', Store, 'View analytics']],
+    admin: [['/admin', ShieldCheck, 'Review listings'], ['/marketplace', Store, 'Browse resources']],
   }[role]
 
   return (
@@ -202,9 +186,9 @@ export default function Dashboard() {
         {cards.map((c) => <StatCard key={c.label} {...c} />)}
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+      <div className={role === 'admin' ? 'mt-6 grid gap-6 lg:grid-cols-[1.5fr_1fr]' : 'mt-6'}>
         <ReminderList rem={rem} user={user} />
-        {role === 'admin' ? <AdminFeed /> : <EcoSnapshot stats={stats} />}
+        {role === 'admin' && <AdminFeed />}
       </div>
 
       <div className="mt-6 space-y-6">
