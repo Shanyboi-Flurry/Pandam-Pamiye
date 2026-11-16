@@ -51,7 +51,8 @@ export default function AddResource() {
   const submit = (e) => {
     e.preventDefault()
     if (form.title.trim().length < 3) return setError('Give the listing a title of at least 3 characters.')
-    if (form.description.trim().length < 10) return setError('Add a short description so people know what they are getting.')
+    if (!form.description.trim()) return setError('Add a description so people know what they are getting. One word is enough.')
+    if (!form.image) return setError('Add a photo of the actual item. Listings without a real photo are not allowed.')
     const maxDays = Number(form.maxDays)
     if (form.type === 'lend' && !(maxDays >= 1 && maxDays <= 60)) return setError('Set a maximum loan between 1 and 60 days.')
     const data = {
@@ -108,7 +109,7 @@ export default function AddResource() {
               </div>
               <div>
                 <label htmlFor="desc" className="label">Description</label>
-                <textarea id="desc" rows={4} className="input" value={form.description} onChange={set('description')} placeholder="What is it, what comes with it, and any rules for using it?" />
+                <textarea id="desc" rows={4} className="input" value={form.description} onChange={set('description')} placeholder="What is it? One word is enough, add more if you like." />
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
@@ -155,7 +156,7 @@ export default function AddResource() {
         </div>
 
         <div className="space-y-6">
-          <Section title="Photo">
+          <Section title="Photo (required)">
             {form.image ? (
               <div className="relative">
                 <img src={form.image} alt="Listing preview" className="h-56 w-full rounded-lg object-cover" />
@@ -167,7 +168,7 @@ export default function AddResource() {
               <label className="flex h-48 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 text-sm text-slate-600 hover:border-spruce-400 hover:bg-spruce-50">
                 <ImagePlus size={28} className="text-spruce-500" aria-hidden="true" />
                 <span className="font-semibold">{busy ? 'Processing photo...' : 'Add a photo'}</span>
-                <span className="text-xs">Optional. It is resized and saved online.</span>
+                <span className="text-xs">Required. Use a real photo of your item. It is resized and saved online.</span>
                 <input type="file" accept="image/*" className="sr-only" onChange={onFile} />
               </label>
             )}
