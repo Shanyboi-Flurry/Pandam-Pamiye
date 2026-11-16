@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, MessageSquare, Search, Send, X } from 'lucide-react'
+import { ArrowLeft, MessageSquare, Search, Send, Trash2, X } from 'lucide-react'
 import { useStore } from '../store'
 import { ROLES } from '../lib/constants'
 import { cx } from '../lib/utils'
@@ -13,7 +13,7 @@ const when = (iso) => {
 }
 
 export default function Messages() {
-  const { user, state, userById, resourceById, sendMessage, markRead, notify } = useStore()
+  const { user, state, userById, resourceById, sendMessage, markRead, deleteConversation, notify } = useStore()
   const [params, setParams] = useSearchParams()
   const [text, setText] = useState('')
   const [q, setQ] = useState('')
@@ -23,7 +23,7 @@ export default function Messages() {
   const topicId = params.get('resource')
   const other = otherId ? userById(otherId) : null
   const topic = topicId ? resourceById(topicId) : null
-  const all = state.messages || []
+  const all = (state.messages || []).filter((m) => !(m.hiddenFor || []).includes(user.id))
 
   const threads = useMemo(() => {
     const map = new Map()
@@ -55,6 +55,13 @@ export default function Messages() {
     .slice(0, 8)
 
   const open = (id) => setParams({ to: id })
+
+  const clearChat = () => {
+    if (!window.confirm(`Delete your conversation with ${other.name}? It will be removed for you only. ${other.name.split(' ')[0]} keeps their copy.`)) return
+    deleteConversation(other.id)
+    setParams({})
+    notify('Conversation deleted.')
+  }
 
   const send = (e) => {
     e?.preventDefault()
@@ -132,10 +139,15 @@ export default function Messages() {
           <header className="flex items-center gap-3 border-b border-slate-200 p-3">
             <Link to="/messages" className="rounded p-1 text-slate-600 hover:bg-slate-100 lg:hidden" aria-label="Back to conversations"><ArrowLeft size={20} /></Link>
             <Avatar name={other.name} />
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="truncate font-semibold text-spruce-900">{other.name}</p>
               <p className="truncate text-xs text-slate-500">{ROLES[other.role].label}{other.dept ? `, ${other.dept}` : ''}</p>
             </div>
+            {thread.length > 0 && (
+              <button type="button" onClick={clearChat} className="btn-ghost btn-sm" aria-label={`Delete conversation with ${other.name}`}>
+                <Trash2 size={16} aria-hidden="true" /> Delete
+              </button>
+            )}
           </header>
           <div className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-spruce-50/40 p-4" aria-live="polite">
             {thread.length === 0 && <p className="py-8 text-center text-sm text-slate-500">Say hello to {other.name.split(' ')[0]}. Keep it about school sharing and be kind.</p>}

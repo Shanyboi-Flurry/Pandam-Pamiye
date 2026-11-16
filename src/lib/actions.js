@@ -336,6 +336,18 @@ export function makeActions(ref, commit) {
       return ok()
     },
 
+    deleteConversation(otherId) {
+      const s = get()
+      const u = me(s)
+      if (!u) return fail('Log in first.')
+      const inThread = (m) => (m.fromId === u.id && m.toId === otherId) || (m.fromId === otherId && m.toId === u.id)
+      const hidden = (m) => (m.hiddenFor || []).includes(u.id)
+      if (!(s.messages || []).some((m) => inThread(m) && !hidden(m))) return ok()
+      // Hidden for this person only; the other member keeps their copy. Marked read so it never counts as unread.
+      commit({ ...s, messages: s.messages.map((m) => (inThread(m) && !hidden(m) ? { ...m, read: m.toId === u.id ? true : m.read, hiddenFor: [...(m.hiddenFor || []), u.id] } : m)) })
+      return ok()
+    },
+
     /* ----- admin: listing approval ----- */
     approveResource(id) {
       const s = get()

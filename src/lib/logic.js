@@ -271,7 +271,7 @@ export function remindersFor(state, user, today) {
   const incomingSwaps = state.exchanges.filter((e) => e.status === 'pending' && manages(e))
   const pendingApprovals = user.role === 'admin' ? state.resources.filter((r) => r.status === 'pending') : []
 
-  const unreadMessages = (state.messages || []).filter((m) => m.toId === user.id && !m.read)
+  const unreadMessages = (state.messages || []).filter((m) => m.toId === user.id && !m.read && !(m.hiddenFor || []).includes(user.id))
 
   const total = overdue.length + dueSoon.length + overdueOut.length + incomingBorrow.length + incomingClaims.length + incomingSwaps.length + pendingApprovals.length + unreadMessages.length
   return { overdue, dueSoon, overdueOut, incomingBorrow, incomingClaims, incomingSwaps, pendingApprovals, unreadMessages, total }
