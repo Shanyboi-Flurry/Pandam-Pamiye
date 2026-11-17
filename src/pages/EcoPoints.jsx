@@ -47,13 +47,9 @@ export default function EcoPoints() {
                 <span>{lvl.next ? `${lvl.next.name} ${lvl.next.min}+` : 'Top level'}</span>
               </div>
               <p className="mt-1 text-sm text-spruce-200">{lvl.next ? `${lvl.toNext} more points to reach ${lvl.next.name}.` : 'You reached the highest level.'}</p>
-              <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-                {[[stats.listings, 'Listings'], [stats.lends + stats.donations + stats.swaps, 'Shares done'], [badges.filter((b) => b.earned).length + '/' + badges.length, 'Badges']].map(([v, l]) => (
-                  <div key={l} className="rounded-xl bg-white/10 px-2 py-2 ring-1 ring-white/10">
-                    <p className="font-display text-lg font-bold text-white">{v}</p>
-                    <p className="text-[11px] text-spruce-300">{l}</p>
-                  </div>
-                ))}
+              <div className="mt-4 inline-block rounded-xl bg-white/10 px-6 py-2 text-center ring-1 ring-white/10">
+                <p className="font-display text-lg font-bold text-white">{badges.filter((b) => b.earned).length}/{badges.length}</p>
+                <p className="text-[11px] text-spruce-300">Badges</p>
               </div>
             </div>
             <div className="mx-auto h-[260px] w-[260px] overflow-hidden rounded-2xl ring-1 ring-white/20 shadow-xl shadow-black/30">
