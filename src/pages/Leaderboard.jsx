@@ -5,12 +5,12 @@ import { badgesFor, levelFor, pointsInRange, userStats } from '../lib/logic'
 import { ROLES } from '../lib/constants'
 import { addDays, cx } from '../lib/utils'
 import { Avatar, EmptyState, PageHeader } from '../components/ui'
-import { GrowthScene } from '../components/GrowthScene'
+import { GrowthScene, SKY } from '../components/GrowthScene'
 import { LEVELS } from '../lib/constants'
 
 // Small round picture of the member's current growth stage (seed, sprout, sapling, tree, forest).
-const Stage = ({ stage, size = 'h-8 w-8' }) => (
-  <span className={cx('inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-spruce-800 ring-1 ring-spruce-300/40', size)} title={LEVELS[stage].name}>
+const Stage = ({ stage, size = 'h-11 w-11' }) => (
+  <span className={cx('inline-flex shrink-0 items-center justify-center overflow-hidden rounded-xl ring-1 ring-white/20', size)} style={{ background: SKY[stage] }} title={LEVELS[stage].name}>
     <GrowthScene compact stage={stage} className="h-full w-full" />
   </span>
 )
@@ -56,18 +56,25 @@ export default function Leaderboard() {
         <EmptyState icon={Trophy} title="Nobody on the board yet" text="Share something to take the first spot." />
       ) : (
         <>
-          <div className="mb-8 flex items-end justify-center gap-3" aria-label="Top three">
+          <div className="mb-8 flex items-end justify-center gap-3 sm:gap-5" aria-label="Top three">
             {order.map((i) => {
               const r = podium[i]
+              const first = i === 0
               return (
-                <div key={r.u.id} className="flex w-28 flex-col items-center text-center sm:w-36">
-                  <Avatar name={r.u.name} size="lg" />
-                  <p className="mt-2 flex w-full items-center justify-center gap-1.5 text-sm font-bold text-spruce-900">
-                    <span className="truncate">{r.u.name}</span>
-                    <Stage stage={r.stage} size="h-7 w-7" />
-                  </p>
-                  <p className="text-xs text-slate-600">{r.points} pts</p>
-                  <div className={cx('mt-2 flex w-full items-start justify-center rounded-t-lg pt-2 font-display text-2xl font-extrabold', heights[i], i === 0 ? 'bg-marker-yellow text-spruce-950' : 'bg-spruce-200 text-spruce-900')}>
+                <div key={r.u.id} className={cx('flex flex-col items-stretch text-center', first ? 'w-36 sm:w-56' : 'w-28 sm:w-44')}>
+                  <div
+                    className={cx('relative overflow-hidden rounded-2xl shadow-xl shadow-black/30 ring-1', first ? 'ring-2 ring-marker-yellow' : 'ring-white/20')}
+                    style={{ background: SKY[r.stage] }}
+                  >
+                    <GrowthScene compact stage={r.stage} className={cx('w-full', first ? 'h-44 sm:h-60' : 'h-36 sm:h-48')} />
+                    <span className="absolute left-2 top-2 rounded-full ring-2 ring-white/70"><Avatar name={r.u.name} size="sm" /></span>
+                    <span className="absolute right-2 top-2 rounded-full bg-black/45 px-2 py-0.5 text-[11px] font-bold text-white backdrop-blur">{LEVELS[r.stage].name}</span>
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/45 to-transparent px-2 pb-2 pt-8">
+                      <p className={cx('truncate font-bold text-white drop-shadow', first ? 'text-base' : 'text-sm')}>{r.u.name}</p>
+                      <p className="text-xs font-semibold text-marker-yellow">{r.points} pts</p>
+                    </div>
+                  </div>
+                  <div className={cx('mt-2 flex w-full items-start justify-center rounded-t-lg pt-2 font-display text-2xl font-extrabold', heights[i], first ? 'bg-marker-yellow text-spruce-950' : 'bg-spruce-200 text-spruce-900')}>
                     {r.rank}
                   </div>
                 </div>
@@ -92,11 +99,10 @@ export default function Leaderboard() {
                     <td className="px-4 py-3 font-display font-bold text-spruce-800">{r.rank}</td>
                     <td className="px-4 py-3">
                       <span className="flex items-center gap-3">
-                        <Avatar name={r.u.name} size="sm" />
+                        <Stage stage={r.stage} size="h-14 w-14" />
                         <span>
                           <span className="flex items-center gap-1.5 font-semibold text-spruce-900">
                             {r.u.name}{r.u.id === user.id && ' (you)'}
-                            <Stage stage={r.stage} />
                           </span>
                           <span className="block text-xs text-slate-500">{ROLES[r.u.role].label}{r.u.dept ? `, ${r.u.dept}` : ''}</span>
                         </span>

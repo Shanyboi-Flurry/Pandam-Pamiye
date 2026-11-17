@@ -4,15 +4,16 @@ import { badgesFor, levelFor, userStats } from '../lib/logic'
 import { LEVELS, POINT_RULES } from '../lib/constants'
 import { cx, fmtDate } from '../lib/utils'
 import { PageHeader, Section } from '../components/ui'
-import { GrowthScene } from '../components/GrowthScene'
+import { GrowthScene, SKY } from '../components/GrowthScene'
 
-const SKY = [
-  'linear-gradient(#0b1a48, #12306e)',
-  'linear-gradient(#12306e, #1b5a8a)',
-  'linear-gradient(#1b5a8a, #2a86a8)',
-  'linear-gradient(#2a86a8, #58b8c8)',
-  'linear-gradient(#3a9bc4, #9bdcf0)',
+const STAGE_INFO = [
+  ['A seed in the soil', 'Everything starts here. List or lend your first item to wake the seed.'],
+  ['The first shoot', 'You are on your way. Every loan, donation and on-time return feeds the sprout.'],
+  ['Growing strong', 'Your sharing habit is taking root. Keep returning items on time to grow taller.'],
+  ['Bearing fruit', 'Others rely on what you share. The golden fruit shows how much you have given back.'],
+  ['A whole forest', 'You are a campus sharing champion. Your habits have grown into a forest.'],
 ]
+
 
 export default function EcoPoints() {
   const { user, state } = useStore()
@@ -35,12 +36,27 @@ export default function EcoPoints() {
               <p className="mt-1 text-lg font-bold">
                 {lvl.current.name} <span className="ml-1 text-xs font-semibold text-spruce-300">Stage {stage + 1} of {LEVELS.length}</span>
               </p>
+              <p className="mt-0.5 text-sm font-semibold text-marker-yellow">{STAGE_INFO[stage][0]}</p>
+              <p className="mt-1 max-w-md text-sm text-spruce-200">{STAGE_INFO[stage][1]}</p>
               <div className="mt-4 h-3 overflow-hidden rounded-full bg-spruce-700" role="progressbar" aria-valuenow={lvl.progress} aria-valuemin={0} aria-valuemax={100} aria-label="Progress to next level">
                 <div className="h-full rounded-full bg-marker-yellow transition-all duration-1000" style={{ width: `${lvl.progress}%` }} />
               </div>
-              <p className="mt-2 text-sm text-spruce-200">{lvl.next ? `${lvl.toNext} more points to reach ${lvl.next.name}.` : 'You reached the highest level.'}</p>
+              <div className="mt-2 flex items-center justify-between text-xs font-semibold text-spruce-300">
+                <span>{lvl.current.name} {lvl.current.min}+</span>
+                <span>{lvl.progress}%</span>
+                <span>{lvl.next ? `${lvl.next.name} ${lvl.next.min}+` : 'Top level'}</span>
+              </div>
+              <p className="mt-1 text-sm text-spruce-200">{lvl.next ? `${lvl.toNext} more points to reach ${lvl.next.name}.` : 'You reached the highest level.'}</p>
+              <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+                {[[stats.listings, 'Listings'], [stats.lends + stats.donations + stats.swaps, 'Shares done'], [badges.filter((b) => b.earned).length + '/' + badges.length, 'Badges']].map(([v, l]) => (
+                  <div key={l} className="rounded-xl bg-white/10 px-2 py-2 ring-1 ring-white/10">
+                    <p className="font-display text-lg font-bold text-white">{v}</p>
+                    <p className="text-[11px] text-spruce-300">{l}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="mx-auto h-[210px] w-[210px] rounded-2xl p-2 ring-1 ring-white/15" style={{ background: SKY[stage] }}>
+            <div className="mx-auto h-[260px] w-[260px] overflow-hidden rounded-2xl ring-1 ring-white/20 shadow-xl shadow-black/30" style={{ background: SKY[stage] }}>
               <GrowthScene key={stage} stage={stage} />
             </div>
           </div>
