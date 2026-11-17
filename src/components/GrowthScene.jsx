@@ -1,13 +1,6 @@
+import { useId } from 'react'
 import { LEVELS } from '../lib/constants'
-
-// Sky colour behind each growth stage (night for the seed, bright day for the forest).
-export const SKY = [
-  'linear-gradient(#0b1a48, #12306e)',
-  'linear-gradient(#12306e, #1b5a8a)',
-  'linear-gradient(#1b5a8a, #2a86a8)',
-  'linear-gradient(#2a86a8, #58b8c8)',
-  'linear-gradient(#3a9bc4, #9bdcf0)',
-]
+import { useDark } from './ui'
 
 /* ---------- small pieces ---------- */
 const Leaf = ({ x, y, flip = 1, s = 1, fill, rot = 0 }) => (
@@ -78,9 +71,13 @@ const Star = ({ x, y, r = 1.4, d = 0 }) => <circle cx={x} cy={y} r={r} fill="#ff
 const Sun = ({ x, y, r = 12, rays = true }) => (
   <g>
     <circle cx={x} cy={y} r={r * 1.9} fill="#fde68a" opacity=".25" />
-    {rays && [...Array(10)].map((_, i) => (
-      <rect key={i} x={x - 1.3} y={y - r * 1.7} width="2.6" height={r * 0.55} rx="1.3" fill="#fde047" opacity=".7" transform={`rotate(${i * 36} ${x} ${y})`} />
-    ))}
+    {rays && (
+      <g className="spin" style={{ transformOrigin: `${x}px ${y}px` }}>
+        {[...Array(10)].map((_, i) => (
+          <rect key={i} x={x - 1.3} y={y - r * 1.7} width="2.6" height={r * 0.55} rx="1.3" fill="#fde047" opacity=".7" transform={`rotate(${i * 36} ${x} ${y})`} />
+        ))}
+      </g>
+    )}
     <circle cx={x} cy={y} r={r} fill="#fbbf24" />
     <circle cx={x - r * 0.3} cy={y - r * 0.3} r={r * 0.45} fill="#fde68a" opacity=".7" />
   </g>
@@ -116,8 +113,55 @@ const Pine = ({ x, y, s = 1, c = '#17794a' }) => (
   </g>
 )
 
+/* ---------- theme-aware sky: sun by day, moon and stars by night ---------- */
+const ease = 'transform 1.4s cubic-bezier(.5,0,.2,1), opacity 1.1s ease'
+function Sky({ dark, stage }) {
+  const id = useId().replace(/:/g, '')
+  const fade = (on) => ({ opacity: on ? 1 : 0, transition: 'opacity 1.1s ease' })
+  return (
+    <>
+      <defs>
+        <linearGradient id={`${id}d`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#3a98d8" /><stop offset="1" stopColor="#bfe6f7" /></linearGradient>
+        <linearGradient id={`${id}n`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#070f33" /><stop offset="1" stopColor="#1d3a7c" /></linearGradient>
+        <mask id={`${id}m`}><rect x="0" y="0" width="200" height="200" fill="#fff" /><circle cx="166" cy="33" r="11" fill="#000" /></mask>
+      </defs>
+      <rect x="-60" y="-60" width="320" height="320" fill={`url(#${id}d)`} />
+      <rect x="-60" y="-60" width="320" height="320" fill={`url(#${id}n)`} style={fade(dark)} />
+
+      <g style={fade(dark)}>
+        {[[30, 40, 1.6, 0], [62, 24, 1.2, .6], [96, 50, 1, 1.1], [134, 24, 1.5, .3], [176, 70, 1.2, .9], [150, 90, 1, 1.4], [44, 84, 1.1, .2], [110, 22, 1, .8], [78, 70, 1, 1.6]].map(([a, b, r, d]) => <Star key={a} x={a} y={b} r={r} d={d} />)}
+        <g className="shoot" opacity="0"><path d="M20 20L44 32" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" /></g>
+      </g>
+
+      {/* moon rises when it gets dark, the sun sets */}
+      <g style={{ transform: `translateY(${dark ? 0 : 90}px)`, opacity: dark ? 1 : 0, transition: ease }}>
+        <circle cx="158" cy="38" r="26" fill="#fef3c7" opacity=".12" className="animate-pulse" />
+        <circle cx="158" cy="38" r="18" fill="#fef3c7" opacity=".14" />
+        <circle cx="158" cy="38" r="14" fill="#fef3c7" mask={`url(#${id}m)`} />
+      </g>
+      <g style={{ transform: `translateY(${dark ? 90 : 0}px)`, opacity: dark ? 0 : 1, transition: ease }}>
+        <Sun x={158} y={40} r={12 + (stage > 2 ? 1 : 0)} />
+      </g>
+
+      <g style={{ opacity: dark ? 0.28 : 1, transition: 'opacity 1.1s ease' }}>
+        <Cloud x={42} y={46} s={1.05} />
+        <Cloud x={112} y={26} s={.75} o={.85} />
+        {stage > 1 && <Cloud x={150} y={78} s={.6} o={.7} />}
+      </g>
+      {stage > 2 && (
+        <g style={fade(!dark)}>
+          <Bird x={74} y={66} s={1} />
+          <Bird x={92} y={56} s={.8} />
+          {stage > 3 && <Bird x={108} y={64} s={.7} />}
+        </g>
+      )}
+    </>
+  )
+}
+
 // One drawing per level: seed, sprout, sapling, tree, forest. Each one adds more life than the last.
 export function GrowthScene({ stage, className, compact }) {
+  const dark = useDark()
   const mound = (
     <>
       <ellipse cx="100" cy="172" rx="90" ry="22" fill="#4a2f1b" />
@@ -128,12 +172,10 @@ export function GrowthScene({ stage, className, compact }) {
   )
   const lawn = <ellipse cx="100" cy="163" rx="82" ry="16" fill="#2f8f4e" />
   return (
-    <svg viewBox={compact ? '20 30 160 160' : '0 0 200 200'} role="img" aria-label={`${LEVELS[stage].name} stage`} className={className}>
+    <svg viewBox={compact ? '20 30 160 160' : '0 0 200 200'} role="img" aria-label={`${LEVELS[stage].name} stage`} className={className} preserveAspectRatio="xMidYMid slice">
+      <Sky dark={dark} stage={stage} />
       {stage === 0 && (
         <>
-          {[[30, 40, 1.6, 0], [62, 24, 1.2, .6], [96, 50, 1, 1.1], [134, 30, 1.5, .3], [168, 56, 1.2, .9], [150, 84, 1, 1.4], [44, 80, 1.1, .2]].map(([a, b, r, d]) => <Star key={a} x={a} y={b} r={r} d={d} />)}
-          <circle cx="158" cy="36" r="14" fill="#fef3c7" />
-          <circle cx="164" cy="31" r="12" fill="#12306e" />
           {mound}
           <Pebble x={46} y={160} s={1} />
           <Pebble x={158} y={165} s={.8} c="#7b7b88" />
@@ -147,15 +189,10 @@ export function GrowthScene({ stage, className, compact }) {
             <path d="M95 142Q98 136 103 138" stroke="#f1c48f" strokeWidth="3" strokeLinecap="round" fill="none" />
             <path d="M101 152L99 160" stroke="#fff" strokeOpacity=".55" strokeWidth="1.4" strokeLinecap="round" />
           </g>
-          <g className="bob"><circle cx="64" cy="130" r="2.2" fill="#fde047" /><circle cx="64" cy="130" r="5" fill="#fde047" opacity=".25" /></g>
-          <g className="bob" style={{ animationDelay: '-1s' }}><circle cx="140" cy="118" r="2" fill="#fde047" /><circle cx="140" cy="118" r="4.5" fill="#fde047" opacity=".25" /></g>
         </>
       )}
       {stage === 1 && (
         <>
-          {[[34, 36, 1.3, 0], [70, 22, 1, .5], [150, 34, 1.3, 1], [176, 70, 1, .3]].map(([a, b, r, d]) => <Star key={a} x={a} y={b} r={r} d={d} />)}
-          <Cloud x={46} y={58} s={.9} o={.55} />
-          <Cloud x={152} y={76} s={.7} o={.4} />
           {mound}
           <Pebble x={52} y={161} s={1} />
           <Grass x={36} y={168} s={.8} c="#2fb86c" />
@@ -174,9 +211,6 @@ export function GrowthScene({ stage, className, compact }) {
       )}
       {stage === 2 && (
         <>
-          <Sun x={158} y={44} r={11} />
-          <Cloud x={44} y={50} s={1} />
-          <Cloud x={116} y={30} s={.7} o={.8} />
           {mound}
           {lawn}
           <Grass x={34} y={168} s={1} />
@@ -205,11 +239,6 @@ export function GrowthScene({ stage, className, compact }) {
       )}
       {stage === 3 && (
         <>
-          <Sun x={162} y={40} r={12} />
-          <Cloud x={40} y={44} s={1.1} />
-          <Cloud x={112} y={26} s={.8} o={.85} />
-          <Bird x={74} y={66} s={1} />
-          <Bird x={92} y={56} s={.8} />
           {mound}
           {lawn}
           <Grass x={30} y={168} s={1.1} />
@@ -228,12 +257,6 @@ export function GrowthScene({ stage, className, compact }) {
       )}
       {stage === 4 && (
         <>
-          <Sun x={158} y={38} r={13} />
-          <Cloud x={40} y={34} s={1.1} />
-          <Cloud x={104} y={20} s={.8} o={.85} />
-          <Bird x={70} y={54} s={1} />
-          <Bird x={88} y={46} s={.8} />
-          <Bird x={108} y={58} s={.7} />
           <path d="M0 200V122Q40 96 92 118T200 108V200Z" fill="#2f9a62" />
           <path d="M0 200V132Q45 108 95 128T200 120V200Z" fill="#1b7a4a" />
           <path d="M20 136Q40 130 60 136" stroke="#0f5132" strokeOpacity=".2" strokeWidth="3" fill="none" />
@@ -263,6 +286,13 @@ export function GrowthScene({ stage, className, compact }) {
           <g className="bob"><circle cx="30" cy="100" r="1.8" fill="#fde047" /></g>
         </>
       )}
+      {/* fireflies and a soft blue tint at night */}
+      <g style={{ opacity: dark ? 1 : 0, transition: 'opacity 1.1s ease' }}>
+        {[[60, 128, 0], [142, 116, -1], [100, 100, -2], [34, 146, -.6]].map(([a, b, d]) => (
+          <g key={a} className="bob" style={{ animationDelay: `${d}s` }}><circle cx={a} cy={b} r="2" fill="#fde047" /><circle cx={a} cy={b} r="5" fill="#fde047" opacity=".25" /></g>
+        ))}
+      </g>
+      <rect x="-60" y="-60" width="320" height="320" fill="#0a1640" pointerEvents="none" style={{ opacity: dark ? 0.3 : 0, transition: 'opacity 1.1s ease' }} />
     </svg>
   )
 }

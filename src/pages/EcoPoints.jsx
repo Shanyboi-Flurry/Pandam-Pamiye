@@ -4,7 +4,7 @@ import { badgesFor, levelFor, userStats } from '../lib/logic'
 import { LEVELS, POINT_RULES } from '../lib/constants'
 import { cx, fmtDate } from '../lib/utils'
 import { PageHeader, Section } from '../components/ui'
-import { GrowthScene, SKY } from '../components/GrowthScene'
+import { GrowthScene } from '../components/GrowthScene'
 
 const STAGE_INFO = [
   ['A seed in the soil', 'Everything starts here. List or lend your first item to wake the seed.'],
@@ -56,24 +56,44 @@ export default function EcoPoints() {
                 ))}
               </div>
             </div>
-            <div className="mx-auto h-[260px] w-[260px] overflow-hidden rounded-2xl ring-1 ring-white/20 shadow-xl shadow-black/30" style={{ background: SKY[stage] }}>
+            <div className="mx-auto h-[260px] w-[260px] overflow-hidden rounded-2xl ring-1 ring-white/20 shadow-xl shadow-black/30">
               <GrowthScene key={stage} stage={stage} />
             </div>
           </div>
           <ol className="mt-7 grid grid-cols-5 gap-1 text-center" aria-label="Growth path">
             {LEVELS.map((l, i) => {
               const reached = stats.points >= l.min
+              const edge = i === 0 ? 'left-0' : i === LEVELS.length - 1 ? 'right-0' : 'left-1/2 -translate-x-1/2'
               return (
-                <li key={l.name} className="relative flex flex-col items-center">
+                <li key={l.name} tabIndex={0} className="group relative flex cursor-pointer flex-col items-center rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-marker-yellow">
                   {i < LEVELS.length - 1 && (
                     <span className={cx('absolute left-1/2 top-7 h-0.5 w-full', stats.points >= LEVELS[i + 1].min ? 'bg-marker-yellow' : 'bg-white/15')} aria-hidden="true" />
                   )}
-                  <span className={cx('relative z-10 flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-spruce-800', i === stage ? 'ring-2 ring-marker-yellow' : reached && 'ring-1 ring-white/25')}>
+                  <span className={cx('relative z-10 flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-spruce-800 transition duration-200 group-hover:scale-110 group-focus-visible:scale-110', i === stage ? 'ring-2 ring-marker-yellow' : reached && 'ring-1 ring-white/25')}>
                     <GrowthScene compact stage={i} className={cx('h-12 w-12', !reached && 'opacity-30 grayscale')} />
                   </span>
                   <span className={cx('mt-2 text-xs font-bold', reached ? 'text-white' : 'text-spruce-400')}>{l.name}</span>
                   <span className="text-[11px] text-spruce-300">{l.min}+</span>
                   {i === stage && <span className="mt-1 rounded-full bg-marker-yellow px-2 py-0.5 text-[10px] font-bold text-spruce-950">Current</span>}
+
+                  {/* Pop-up preview: shows on hover or keyboard focus, even for stages that are still locked */}
+                  <div role="tooltip" className={cx('pointer-events-none absolute bottom-full z-40 mb-3 w-56 origin-bottom scale-75 rounded-2xl border border-white/15 bg-spruce-950 p-3 text-left opacity-0 shadow-2xl shadow-black/50 transition duration-200 ease-out group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100', edge)}>
+                    <div className="relative overflow-hidden rounded-xl ring-1 ring-white/15">
+                      <GrowthScene compact stage={i} className="h-32 w-full" />
+                      {!reached && (
+                        <span className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-bold text-white backdrop-blur"><Lock size={11} aria-hidden="true" /> Locked</span>
+                      )}
+                    </div>
+                    <p className="mt-2 flex items-center justify-between text-sm font-bold text-white">
+                      {l.name}
+                      <span className="text-[11px] font-semibold text-spruce-300">Stage {i + 1} of {LEVELS.length}</span>
+                    </p>
+                    <p className="text-xs font-semibold text-marker-yellow">{STAGE_INFO[i][0]}</p>
+                    <p className="mt-1 text-xs text-spruce-200">{STAGE_INFO[i][1]}</p>
+                    <p className="mt-2 rounded-lg bg-white/10 px-2 py-1 text-center text-[11px] font-bold text-white">
+                      {i === stage ? 'You are here' : reached ? `Unlocked at ${l.min} points` : `${l.min - stats.points} more points to unlock`}
+                    </p>
+                  </div>
                 </li>
               )
             })}

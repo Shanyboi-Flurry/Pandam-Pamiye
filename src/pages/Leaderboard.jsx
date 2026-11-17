@@ -5,12 +5,12 @@ import { badgesFor, levelFor, pointsInRange, userStats } from '../lib/logic'
 import { ROLES } from '../lib/constants'
 import { addDays, cx } from '../lib/utils'
 import { Avatar, EmptyState, PageHeader } from '../components/ui'
-import { GrowthScene, SKY } from '../components/GrowthScene'
+import { GrowthScene } from '../components/GrowthScene'
 import { LEVELS } from '../lib/constants'
 
 // Small round picture of the member's current growth stage (seed, sprout, sapling, tree, forest).
 const Stage = ({ stage, size = 'h-11 w-11' }) => (
-  <span className={cx('inline-flex shrink-0 items-center justify-center overflow-hidden rounded-xl ring-1 ring-white/20', size)} style={{ background: SKY[stage] }} title={LEVELS[stage].name}>
+  <span className={cx('inline-flex shrink-0 items-center justify-center overflow-hidden rounded-xl ring-1 ring-white/20', size)} title={LEVELS[stage].name}>
     <GrowthScene compact stage={stage} className="h-full w-full" />
   </span>
 )
@@ -64,7 +64,6 @@ export default function Leaderboard() {
                 <div key={r.u.id} className={cx('flex flex-col items-stretch text-center', first ? 'w-36 sm:w-56' : 'w-28 sm:w-44')}>
                   <div
                     className={cx('relative overflow-hidden rounded-2xl shadow-xl shadow-black/30 ring-1', first ? 'ring-2 ring-marker-yellow' : 'ring-white/20')}
-                    style={{ background: SKY[r.stage] }}
                   >
                     <GrowthScene compact stage={r.stage} className={cx('w-full', first ? 'h-44 sm:h-60' : 'h-36 sm:h-48')} />
                     <span className="absolute left-2 top-2 rounded-full ring-2 ring-white/70"><Avatar name={r.u.name} size="sm" /></span>
