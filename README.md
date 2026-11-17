@@ -30,7 +30,7 @@ The app starts empty apart from these four accounts. New members can also regist
 The administrator account only reviews listings (plus a read-only marketplace view).
 
 ## Messages
-Members can send each other private messages (Messages page, or the "Message" button on any resource). Unread messages show as a badge in the sidebar and the bell. Administrators do not use messaging.
+Members can send each other private messages (Messages page, or the "Message" button on any resource). Unread messages show as a badge in the sidebar and the bell. Administrators can message any member from the Members page.
 
 ## Reset data
 Open the browser DevTools (F12) → Application → Local Storage → delete the `reuseu:v2` entry (the storage key keeps its original internal name), then refresh.

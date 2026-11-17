@@ -349,6 +349,33 @@ export function makeActions(ref, commit) {
       return ok()
     },
 
+    /* ----- admin: members ----- */
+    removeMember(id) {
+      const s = get()
+      if (me(s)?.role !== 'admin') return fail('Only administrators can remove accounts.')
+      const target = s.users.find((x) => x.id === id)
+      if (!target || target.role === 'admin') return fail('This account cannot be removed.')
+      const mineRes = new Set(s.resources.filter((r) => r.ownerId === id).map((r) => r.id))
+      const involves = (x) => x.borrowerId === id || x.requesterId === id || x.ownerId === id || mineRes.has(x.resourceId)
+      const active =
+        s.borrowings.some((b) => b.status === 'approved' && involves(b)) ||
+        s.claims.some((c) => c.status === 'approved' && involves(c)) ||
+        s.exchanges.some((e) => e.status === 'accepted' && involves(e))
+      if (active) return fail('This member has an active loan, handover, or swap. Finish it before removing the account.')
+      commit({
+        ...s,
+        users: s.users.filter((x) => x.id !== id),
+        resources: s.resources.filter((r) => !mineRes.has(r.id)),
+        borrowings: s.borrowings.filter((b) => !involves(b)),
+        claims: s.claims.filter((c) => !involves(c)),
+        exchanges: s.exchanges.filter((e) => !involves(e)),
+        messages: (s.messages || []).filter((m) => m.fromId !== id && m.toId !== id),
+        activity: s.activity.filter((a) => a.userId !== id),
+        tombstones: [...(s.tombstones || []), { id }, ...[...mineRes].map((rid) => ({ id: rid }))],
+      })
+      return ok()
+    },
+
     /* ----- admin: listing approval ----- */
     approveResource(id) {
       const s = get()

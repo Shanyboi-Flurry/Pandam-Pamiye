@@ -73,6 +73,27 @@ export function userStats(state, userId) {
   }
 }
 
+/* ---------- Reputation ---------- */
+// Everyone starts at 100. Each borrowed item that is overdue (or was returned late) costs 10 points;
+// each item returned on time gives 5 back. Always between 0 and 100. Worked out from the loan records,
+// so it needs no extra storage and cannot get out of sync.
+export const REP_START = 100
+export const REP_LATE = 10
+export const REP_ON_TIME = 5
+export function reputationFor(state, userId, today) {
+  let score = REP_START
+  state.borrowings
+    .filter((b) => b.borrowerId === userId)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    .forEach((b) => {
+      if (b.status === 'returned') score += b.returnedAt <= b.end ? REP_ON_TIME : -REP_LATE
+      else if (isOverdue(b, today)) score -= REP_LATE
+      score = Math.max(0, Math.min(REP_START, score))
+    })
+  return score
+}
+export const repTone = (score) => (score >= 80 ? 'ok' : score >= 50 ? 'warn' : 'bad')
+
 export function levelFor(points) {
   let idx = 0
   LEVELS.forEach((l, i) => {
@@ -300,7 +321,8 @@ export function applyRoster(data) {
   const named = (u) => (RENAMES[u.id]?.[0] === u.name ? { ...u, name: RENAMES[u.id][1] } : u)
   const users = data.users.map((u) => (u.id === 'u_student' && u.dept === 'Grade 11' ? { ...named(u), dept: 'BS Information Technology - 2nd year' } : named(u)))
   NEW_STUDENTS.forEach((a) => {
-    if (!users.some((u) => u.email.toLowerCase() === a.email)) users.push({ ...a, bio: '', joined: todayStr(), suspended: false })
+    const removed = (data.tombstones || []).some((t) => t.id === a.id)
+    if (!removed && !users.some((u) => u.email.toLowerCase() === a.email)) users.push({ ...a, bio: '', joined: todayStr(), suspended: false })
   })
   const same = users.length === data.users.length && users.every((u, i) => u === data.users[i])
   return applyDemo(same ? data : { ...data, users })

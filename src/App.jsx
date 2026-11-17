@@ -17,6 +17,7 @@ import EcoPoints from './pages/EcoPoints'
 import Leaderboard from './pages/Leaderboard'
 import Admin from './pages/Admin'
 import Messages from './pages/Messages'
+import Members from './pages/Members'
 import Profile from './pages/Profile'
 
 function RequireAuth({ children, role }) {
@@ -62,6 +63,7 @@ export default function App() {
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/messages" element={<Messages />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/members" element={<RequireAuth role="admin"><Members /></RequireAuth>} />
         <Route path="/admin" element={<RequireAuth role="admin"><Admin /></RequireAuth>} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

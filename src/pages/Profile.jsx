@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { useStore } from '../store'
-import { levelFor, userStats } from '../lib/logic'
+import { levelFor, reputationFor, userStats } from '../lib/logic'
 import { ROLES } from '../lib/constants'
 import { fmtDate } from '../lib/utils'
 import { Avatar, PageHeader, Section } from '../components/ui'
 
 export default function Profile() {
-  const { user, state, updateProfile, notify } = useStore()
+  const { user, state, today, updateProfile, notify } = useStore()
   const [form, setForm] = useState({ name: user.name, dept: user.dept || '', bio: user.bio || '' })
   const [error, setError] = useState('')
   const stats = userStats(state, user.id)
@@ -56,6 +56,7 @@ export default function Profile() {
         <Section title="Your impact">
           <dl className="grid grid-cols-2 gap-4 text-sm">
             {[
+              ['Reputation', `${reputationFor(state, user.id, today)} / 100`],
               ['EcoPoints', stats.points],
               ['Level', levelFor(stats.points).current.name],
               ['Listings', stats.listings],

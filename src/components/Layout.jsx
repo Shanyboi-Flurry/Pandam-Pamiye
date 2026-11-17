@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   AlertTriangle, Bell, CalendarDays, ClipboardList, Clock, Gift, Leaf, LayoutDashboard, LogOut, Menu, Package,
-  PlusCircle, Repeat, ShieldCheck, Store, Trophy, X, Inbox, MessageSquare,
+  PlusCircle, Repeat, ShieldCheck, Store, Trophy, Users, X, Inbox, MessageSquare,
 } from 'lucide-react'
 import { useStore } from '../store'
-import { remindersFor, userStats } from '../lib/logic'
+import { remindersFor, reputationFor, repTone, userStats } from '../lib/logic'
 import { ROLES } from '../lib/constants'
 import { cx } from '../lib/utils'
 import { Avatar, Toasts, Logo, ThemeToggle } from './ui'
@@ -17,6 +17,8 @@ function buildNav(role) {
     return [
       { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { to: '/admin', label: 'Listing approvals', icon: ShieldCheck, badge: 'approvals' },
+      { to: '/members', label: 'Members', icon: Users },
+      { to: '/messages', label: 'Messages', icon: MessageSquare, badge: 'messages' },
       { to: '/marketplace', label: 'Resources', icon: Store },
     ]
   }
@@ -92,6 +94,7 @@ export default function Layout() {
 
   const rem = remindersFor(state, user, today)
   const points = userStats(state, user.id).points
+  const rep = reputationFor(state, user.id, today)
   const counts = {
     borrow: rem.incomingBorrow.length + rem.overdue.length + rem.overdueOut.length,
     claims: rem.incomingClaims.length,
@@ -162,6 +165,11 @@ export default function Layout() {
             <Menu size={18} />
           </button>
           <div className="flex-1" />
+          {user.role !== 'admin' && (
+            <Link to="/profile" title="Reputation: drops 10 for each overdue item, +5 for each on-time return" className={cx('flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-bold shadow-sm transition hover:-translate-y-px', { ok: 'bg-emerald-100 text-emerald-800', warn: 'bg-amber-100 text-amber-800', bad: 'bg-red-100 text-red-700' }[repTone(rep)])}>
+              <ShieldCheck size={16} aria-hidden="true" /> {rep} Reputation
+            </Link>
+          )}
           {user.role !== 'admin' && (
             <Link to="/ecopoints" className="flex items-center gap-1.5 rounded-xl bg-marker-yellow/80 px-3 py-2 text-sm font-bold text-spruce-950 shadow-sm transition hover:-translate-y-px hover:bg-marker-yellow hover:shadow-md">
               <Leaf size={16} aria-hidden="true" /> {points} EcoPoints

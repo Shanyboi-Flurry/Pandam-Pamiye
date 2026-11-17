@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Check, PackageCheck, X } from 'lucide-react'
 import { useStore } from '../store'
-import { daysOverdue, hasConflict, isDueSoon, isOverdue } from '../lib/logic'
+import { daysOverdue, hasConflict, isDueSoon, isOverdue, reputationFor } from '../lib/logic'
 import { cx, fmtDate, fmtShort, plural } from '../lib/utils'
 import { DueStamp, StatusBadge, ResourceThumb } from './ui'
 
@@ -90,7 +90,7 @@ export function BorrowingCard({ b, as = 'borrower' }) {
     >
       <Title resource={r} status={overdue ? 'overdue' : b.status} />
       <p className="mt-1 text-sm text-slate-600">
-        {fmtShort(b.start)} to {fmtShort(b.end)} &middot; {as === 'borrower' ? 'Owner' : 'Borrower'}: {other?.name || 'Unknown'}
+        {fmtShort(b.start)} to {fmtShort(b.end)} &middot; {as === 'borrower' ? 'Owner' : 'Borrower'}: {other?.name || 'Unknown'}{as !== 'borrower' && other && ` (reputation ${reputationFor(state, other.id, today)})`}
       </p>
       {b.purpose && <p className="text-sm text-slate-500">For: {b.purpose}</p>}
       {overdue && <p className="mt-1 text-sm font-semibold text-red-700">{plural(daysOverdue(b, today), 'day')} overdue. {as === 'borrower' ? 'Return it to the owner as soon as you can.' : 'Remind the borrower to return it.'}</p>}
