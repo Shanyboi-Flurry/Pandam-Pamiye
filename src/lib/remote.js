@@ -20,7 +20,7 @@ const insertRow = (data) =>
 const casUpdate = async (version, data) =>
   (await call(`id=eq.1&version=eq.${version}`, { method: 'PATCH', headers: { Prefer: 'return=representation' }, body: JSON.stringify({ data, version: version + 1 }) })).length > 0
 
-const COLS = ['users', 'resources', 'borrowings', 'claims', 'exchanges', 'messages', 'activity']
+const COLS = ['users', 'resources', 'borrowings', 'claims', 'exchanges', 'messages', 'activity', 'tombstones']
 const NEWEST_FIRST = new Set(['resources', 'borrowings', 'claims', 'exchanges'])
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
 
@@ -30,6 +30,8 @@ export const pick = (s) => Object.fromEntries(COLS.map((k) => [k, s[k] || []]))
 function mergeCol(key, server, base, mine) {
   const was = new Map(base.map((x) => [x.id, x]))
   const out = new Map(server.map((x) => [x.id, x]))
+  const gone = new Set(mine.map((x) => x.id))
+  for (const id of was.keys()) if (!gone.has(id)) out.delete(id) // deleted here
   const added = []
   for (const x of mine) {
     const old = was.get(x.id)

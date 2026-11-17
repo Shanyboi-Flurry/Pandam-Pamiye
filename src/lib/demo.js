@@ -95,6 +95,8 @@ export function applyDemo(data) {
   const today = todayStr()
   const day = (n) => addDays(today, n)
   const ids = new Set(data.users.map((u) => u.id))
+  // Listings that were deleted. They are never added back, and old "removed" listings are erased for good.
+  const dead = new Set([...(data.tombstones || []).map((t) => t.id), ...data.resources.filter((r) => r.status === 'removed').map((r) => r.id)])
   const who = { admin: 'u_admin', ramon: 'u_teacher', jose: 'u_staff', paolo: 'u_student', kurt: 'u_kurt', justin: 'u_justin', mika: data.users.find((u) => u.email.toLowerCase() === MIKA)?.id }
   const here = (...keys) => keys.every((k) => who[k] && ids.has(who[k]))
   const have = (list) => new Set(list.map((x) => x.id))
@@ -105,9 +107,9 @@ export function applyDemo(data) {
 
   RESOURCES.forEach(([key, o, ago, title, category, type, condition, status, description, x = {}]) => {
     owner[key] = o
-    if (!here(o)) return
-    shown.add(key)
     const id = `demo_r_${key}`
+    if (!here(o) || dead.has(id)) return
+    shown.add(key)
     resources.push({
       id, ownerId: who[o], createdAt: day(-ago), title, description, category, condition, type, maxDays: x.maxDays ?? null, wanted: x.wanted || '', tags: x.tags || [], image: '',
       schoolOwned: !!x.school, status, reviewNote: x.note || '', ...(status === 'pending' ? {} : { reviewedAt: day(1 - ago) }),
@@ -155,9 +157,14 @@ export function applyDemo(data) {
   }
   const add = { resources: fresh(data.resources, resources), borrowings: fresh(data.borrowings, borrowings), claims: fresh(data.claims, claims), exchanges: fresh(data.exchanges, exchanges), messages: fresh(data.messages, messages), activity: fresh(data.activity, activity) }
   let changed = Object.values(add).some((l) => l.length)
+  const purged = data.resources.filter((r) => r.status === 'removed')
+  const knownDead = new Set((data.tombstones || []).map((t) => t.id))
+  const newDead = purged.filter((r) => !knownDead.has(r.id)).map((r) => ({ id: r.id }))
+  if (purged.length || newDead.length) changed = true
   const next = {
     ...data,
-    resources: [...add.resources, ...data.resources], borrowings: [...add.borrowings, ...data.borrowings], claims: [...add.claims, ...data.claims], exchanges: [...add.exchanges, ...data.exchanges],
+    tombstones: [...(data.tombstones || []), ...newDead],
+    resources: [...add.resources, ...data.resources.filter((r) => r.status !== 'removed')], borrowings: [...add.borrowings, ...data.borrowings], claims: [...add.claims, ...data.claims], exchanges: [...add.exchanges, ...data.exchanges],
     messages: [...data.messages, ...add.messages], activity: [...data.activity, ...add.activity],
   }
 

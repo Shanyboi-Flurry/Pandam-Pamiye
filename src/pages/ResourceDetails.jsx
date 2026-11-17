@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useConfirm } from '../components/Confirm'
 import { AlertTriangle, ArrowLeft, MessageSquare, Pause, Pencil, Play, Trash2, TrendingUp } from 'lucide-react'
 import { useStore } from '../store'
 import { availabilityOf, canManage, hasConflict } from '../lib/logic'
@@ -148,6 +149,7 @@ export default function ResourceDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user, state, today, resourceById, userById, demand, togglePause, removeResource, notify } = useStore()
+  const confirm = useConfirm()
   const resource = resourceById(id)
 
   const similar = useMemo(() => {
@@ -258,7 +260,7 @@ export default function ResourceDetails() {
                   </button>
                 )}
                 {resource.status !== 'removed' && (
-                  <button className="btn-ghost text-red-700" onClick={() => { if (window.confirm('Remove this listing? Pending requests will be declined.')) { const res = removeResource(resource.id); if (res.ok) { notify('Listing removed.'); navigate('/listings') } else notify(res.error, 'error') } }}>
+                  <button className="btn-ghost text-red-700" onClick={async () => { if (await confirm({ title: 'Remove this listing?', message: `"${resource.title}" will be taken off the platform and any pending requests will be declined.`, confirmLabel: 'Yes, remove' })) { const res = removeResource(resource.id); if (res.ok) { notify('Listing removed.'); navigate('/listings') } else notify(res.error, 'error') } }}>
                     <Trash2 size={16} /> Remove
                   </button>
                 )}

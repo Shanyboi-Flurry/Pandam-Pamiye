@@ -103,7 +103,8 @@ export function makeActions(ref, commit) {
         s.exchanges.some((e) => e.resourceId === id && e.status === 'accepted')
       if (busy) return fail('Finish the active loan, handover, or swap before removing this listing.')
       const declined = declinePending(s, id, 'The listing was removed.')
-      commit({ ...s, ...declined, resources: s.resources.map((x) => (x.id === id ? { ...x, status: 'removed' } : x)) })
+      // Real delete: the listing disappears everywhere. A tombstone stops the sample data from adding it back.
+      commit({ ...s, ...declined, resources: s.resources.filter((x) => x.id !== id), tombstones: [...(s.tombstones || []), { id }] })
       return ok()
     },
 

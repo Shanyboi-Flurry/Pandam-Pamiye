@@ -4,14 +4,16 @@ import { useStore } from '../store'
 import { availabilityOf } from '../lib/logic'
 import { TYPES } from '../lib/constants'
 import { cx } from '../lib/utils'
+import { useConfirm } from '../components/Confirm'
 import { EmptyState, PageHeader, StatCard, ToneBadge, ResourceThumb } from '../components/ui'
 
 export default function MyListings() {
   const { user, state, today, togglePause, removeResource, notify } = useStore()
+  const confirm = useConfirm()
   const school = user.role === 'staff' || user.role === 'admin'
   const list = state.resources
     .filter((r) => r.ownerId === user.id || (school && r.schoolOwned))
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .sort((a, b) => (a.status === 'removed') - (b.status === 'removed') || b.createdAt.localeCompare(a.createdAt))
 
   const pendingFor = (id) =>
     state.borrowings.filter((b) => b.resourceId === id && b.status === 'pending').length +
@@ -71,10 +73,18 @@ export default function MyListings() {
                       {r.status === 'active' ? <><Pause size={14} /> Pause</> : <><Play size={14} /> Resume</>}
                     </button>
                   )}
+                  {r.status === 'removed' && (
+                    <button
+                      className="btn-ghost btn-sm text-red-700"
+                      onClick={async () => (await confirm({ title: 'Delete permanently?', message: `"${r.title}" will be erased from the database. This cannot be undone.`, confirmLabel: 'Delete forever' })) && run(removeResource(r.id), 'Listing deleted.')}
+                    >
+                      <Trash2 size={14} /> Delete
+                    </button>
+                  )}
                   {r.status !== 'removed' && (
                     <button
                       className="btn-ghost btn-sm text-red-700"
-                      onClick={() => window.confirm(`Remove "${r.title}"? Pending requests will be declined.`) && run(removeResource(r.id), 'Listing removed.')}
+                      onClick={async () => (await confirm({ title: 'Remove this listing?', message: `"${r.title}" will be taken off the platform and any pending requests will be declined.`, confirmLabel: 'Yes, remove' })) && run(removeResource(r.id), 'Listing removed.')}
                     >
                       <Trash2 size={14} /> Remove
                     </button>

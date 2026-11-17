@@ -5,6 +5,7 @@ import { useStore } from '../store'
 import { ROLES } from '../lib/constants'
 import { cx } from '../lib/utils'
 import { Avatar, EmptyState, PageHeader } from '../components/ui'
+import { useConfirm } from '../components/Confirm'
 
 const when = (iso) => {
   const d = new Date(iso)
@@ -15,6 +16,7 @@ const when = (iso) => {
 export default function Messages() {
   const { user, state, userById, resourceById, sendMessage, markRead, deleteConversation, notify } = useStore()
   const [params, setParams] = useSearchParams()
+  const confirm = useConfirm()
   const [text, setText] = useState('')
   const [q, setQ] = useState('')
   const endRef = useRef(null)
@@ -56,8 +58,8 @@ export default function Messages() {
 
   const open = (id) => setParams({ to: id })
 
-  const clearChat = () => {
-    if (!window.confirm(`Delete your conversation with ${other.name}? It will be removed for you only. ${other.name.split(' ')[0]} keeps their copy.`)) return
+  const clearChat = async () => {
+    if (!(await confirm({ title: 'Delete conversation?', message: `Your chat with ${other.name} will be removed for you only. ${other.name.split(' ')[0]} keeps their copy.`, confirmLabel: 'Delete' }))) return
     deleteConversation(other.id)
     setParams({})
     notify('Conversation deleted.')
