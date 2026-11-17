@@ -1,3 +1,4 @@
+import UserHover from './UserHover'
 import { Link } from 'react-router-dom'
 import { Check, PackageCheck, X } from 'lucide-react'
 import { useStore } from '../store'
@@ -90,7 +91,7 @@ export function BorrowingCard({ b, as = 'borrower' }) {
     >
       <Title resource={r} status={overdue ? 'overdue' : b.status} />
       <p className="mt-1 text-sm text-slate-600">
-        {fmtShort(b.start)} to {fmtShort(b.end)} &middot; {as === 'borrower' ? 'Owner' : 'Borrower'}: {other?.name || 'Unknown'}{as !== 'borrower' && other && ` (reputation ${reputationFor(state, other.id, today)})`}
+        {fmtShort(b.start)} to {fmtShort(b.end)} &middot; {as === 'borrower' ? 'Owner' : 'Borrower'}: <UserHover id={other?.id}>{other?.name || 'Unknown'}</UserHover>{as !== 'borrower' && other && ` (reputation ${reputationFor(state, other.id, today)})`}
       </p>
       {b.purpose && <p className="text-sm text-slate-500">For: {b.purpose}</p>}
       {overdue && <p className="mt-1 text-sm font-semibold text-red-700">{plural(daysOverdue(b, today), 'day')} overdue. {as === 'borrower' ? 'Return it to the owner as soon as you can.' : 'Remind the borrower to return it.'}</p>}
@@ -128,7 +129,7 @@ export function ClaimCard({ c, as = 'requester' }) {
     <Shell resource={r} actions={actions}>
       <Title resource={r} status={c.status} />
       <p className="mt-1 text-sm text-slate-600">
-        {as === 'requester' ? 'Donor' : 'Requested by'}: {other?.name || 'Unknown'} &middot; {fmtDate(c.createdAt)}
+        {as === 'requester' ? 'Donor' : 'Requested by'}: <UserHover id={other?.id}>{other?.name || 'Unknown'}</UserHover> &middot; {fmtDate(c.createdAt)}
       </p>
       {c.message && <p className="text-sm text-slate-500">"{c.message}"</p>}
       {c.status === 'approved' && as === 'requester' && <p className="mt-1 text-sm text-sky-700">Approved. Contact the donor to arrange pickup.</p>}
@@ -165,7 +166,7 @@ export function ExchangeCard({ e, as = 'requester' }) {
     <Shell resource={r} actions={actions}>
       <Title resource={r} status={e.status} />
       <p className="mt-1 text-sm text-slate-600">
-        {as === 'requester' ? 'Owner' : 'Offer from'}: {other?.name || 'Unknown'} &middot; {fmtDate(e.createdAt)}
+        {as === 'requester' ? 'Owner' : 'Offer from'}: <UserHover id={other?.id}>{other?.name || 'Unknown'}</UserHover> &middot; {fmtDate(e.createdAt)}
       </p>
       <p className="text-sm text-slate-700">
         <span className="font-semibold">Offering:</span> {e.offerTitle}

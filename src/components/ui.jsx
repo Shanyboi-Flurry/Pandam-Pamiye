@@ -4,6 +4,7 @@ import { AlertCircle, CheckCircle2, ChevronLeft, ChevronRight, Moon, Sun, X } fr
 import { CAT, TYPES } from '../lib/constants'
 import { cx, fmtShort, initials, parseISO, toISO } from '../lib/utils'
 import { useStore } from '../store'
+import UserHover from './UserHover'
 
 const AVATAR_COLORS = ['bg-spruce-600', 'bg-sky-600', 'bg-violet-600', 'bg-amber-600', 'bg-pink-600', 'bg-teal-600', 'bg-orange-600']
 const AVATAR_SIZES = { sm: 'h-7 w-7 text-[11px]', md: 'h-9 w-9 text-xs', lg: 'h-14 w-14 text-lg' }
@@ -218,7 +219,7 @@ export function ResourceCard({ resource, availability, owner, reasons }) {
         <h3 className="line-clamp-2 text-base font-bold leading-snug text-spruce-900 group-hover:text-spruce-600">{resource.title}</h3>
         <p className="text-xs text-slate-500">
           {CAT[resource.category].short} &middot; {resource.condition}
-          {owner ? <> &middot; {owner.name}</> : null}
+          {owner ? <> &middot; <UserHover id={owner.id}>{owner.name}</UserHover></> : null}
         </p>
         <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-1">
           <ToneBadge tone={availability.tone}>{availability.label}</ToneBadge>

@@ -1,3 +1,4 @@
+import UserHover from '../components/UserHover'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useConfirm } from '../components/Confirm'
@@ -236,7 +237,7 @@ export default function ResourceDetails() {
                 <div className="flex items-center gap-3">
                   <Avatar name={owner?.name} />
                   <div>
-                    <p className="text-sm font-semibold text-spruce-900">{owner?.name}</p>
+                    <p className="text-sm font-semibold text-spruce-900"><UserHover id={owner?.id}>{owner?.name}</UserHover></p>
                     <p className="text-xs text-slate-500">{ROLES[owner?.role]?.label}{owner?.dept ? `, ${owner.dept}` : ''}</p>
                   </div>
                 </div>

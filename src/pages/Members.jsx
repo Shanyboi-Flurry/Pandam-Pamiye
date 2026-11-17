@@ -1,3 +1,4 @@
+import UserHover from '../components/UserHover'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { MessageSquare, Search, ShieldCheck, Trash2, UserX, Users } from 'lucide-react'
@@ -67,7 +68,7 @@ export default function Members() {
               <Avatar name={u.name} />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-bold text-spruce-900">{u.name}</p>
+                  <p className="font-bold text-spruce-900"><UserHover id={u.id}>{u.name}</UserHover></p>
                   <span className="badge bg-slate-200 text-slate-700">{ROLES[u.role].label}</span>
                   <ToneBadge tone={repTone(rep)}>Reputation {rep}</ToneBadge>
                 </div>

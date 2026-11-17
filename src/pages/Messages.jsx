@@ -1,3 +1,4 @@
+import UserHover from '../components/UserHover'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, MessageSquare, Search, Send, Trash2, X } from 'lucide-react'
@@ -142,7 +143,7 @@ export default function Messages() {
             <Link to="/messages" className="rounded p-1 text-slate-600 hover:bg-slate-100 lg:hidden" aria-label="Back to conversations"><ArrowLeft size={20} /></Link>
             <Avatar name={other.name} />
             <div className="min-w-0 flex-1">
-              <p className="truncate font-semibold text-spruce-900">{other.name}</p>
+              <p className="truncate font-semibold text-spruce-900"><UserHover id={other.id}>{other.name}</UserHover></p>
               <p className="truncate text-xs text-slate-500">{ROLES[other.role].label}{other.dept ? `, ${other.dept}` : ''}</p>
             </div>
             {thread.length > 0 && (

@@ -1,3 +1,4 @@
+import UserHover from '../components/UserHover'
 import { Link } from 'react-router-dom'
 import { AlertTriangle, ArrowRight, Clock, Gift, Inbox, Leaf, Package, PlusCircle, Repeat, Search, Store, Users, ShieldCheck, Truck, GraduationCap } from 'lucide-react'
 import { useStore } from '../store'
@@ -111,7 +112,7 @@ function AdminFeed() {
           {pending.map((r) => (
             <li key={r.id} className="flex items-center gap-3 py-2.5 text-sm">
               <Avatar name={userById(r.ownerId)?.name} size="sm" />
-              <span className="flex-1"><span className="font-semibold">{r.title}</span> <span className="text-slate-500">by {userById(r.ownerId)?.name}</span></span>
+              <span className="flex-1"><span className="font-semibold">{r.title}</span> <span className="text-slate-500">by <UserHover id={r.ownerId}>{userById(r.ownerId)?.name}</UserHover></span></span>
               <span className="text-xs text-slate-500">{fmtShort(r.createdAt)}</span>
             </li>
           ))}

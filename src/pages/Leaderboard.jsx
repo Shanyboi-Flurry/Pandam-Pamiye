@@ -1,3 +1,4 @@
+import UserHover from '../components/UserHover'
 import { useMemo, useState } from 'react'
 import { Trophy } from 'lucide-react'
 import { useStore } from '../store'
@@ -69,7 +70,7 @@ export default function Leaderboard() {
                     <span className="absolute left-2 top-2 rounded-full ring-2 ring-white/70"><Avatar name={r.u.name} size="sm" /></span>
                     <span className="absolute right-2 top-2 rounded-full bg-black/45 px-2 py-0.5 text-[11px] font-bold text-white backdrop-blur">{LEVELS[r.stage].name}</span>
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/45 to-transparent px-2 pb-2 pt-8">
-                      <p className={cx('truncate font-bold text-white drop-shadow', first ? 'text-base' : 'text-sm')}>{r.u.name}</p>
+                      <p className={cx('truncate font-bold text-white drop-shadow', first ? 'text-base' : 'text-sm')}><UserHover id={r.u.id} className="decoration-white/50">{r.u.name}</UserHover></p>
                       <p className="text-xs font-semibold text-marker-yellow">{r.points} pts</p>
                     </div>
                   </div>
@@ -101,7 +102,7 @@ export default function Leaderboard() {
                         <Stage stage={r.stage} size="h-14 w-14" />
                         <span>
                           <span className="flex items-center gap-1.5 font-semibold text-spruce-900">
-                            {r.u.name}{r.u.id === user.id && ' (you)'}
+                            <UserHover id={r.u.id}>{r.u.name}</UserHover>{r.u.id === user.id && ' (you)'}
                           </span>
                           <span className="block text-xs text-slate-500">{ROLES[r.u.role].label}{r.u.dept ? `, ${r.u.dept}` : ''}</span>
                         </span>
