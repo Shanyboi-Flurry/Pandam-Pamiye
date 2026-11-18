@@ -319,14 +319,9 @@ export const useDark = () => useSyncExternalStore(onTheme, () => document.docume
 export function ThemeToggle({ className }) {
   const dark = useDark()
   const toggle = () => {
-    // Switch instantly: while 'theme-switching' is on, no element fades its colours one by one
-    // (hundreds of simultaneous transitions are what made slow devices lag).
-    const root = document.documentElement
-    root.classList.add('theme-switching')
-    root.classList.toggle('dark', !dark)
+    document.documentElement.classList.toggle('dark', !dark)
     try { localStorage.setItem('reuseu:theme', dark ? 'light' : 'dark') } catch { /* private mode */ }
     window.dispatchEvent(new Event('themechange'))
-    window.setTimeout(() => root.classList.remove('theme-switching'), 350)
   }
   return (
     <button type="button" onClick={toggle} aria-pressed={dark} aria-label={dark ? 'Switch to light mode' : 'Switch to night mode'} title={dark ? 'Light mode' : 'Night mode'} className={cx('btn-ghost !px-2.5', className)}>

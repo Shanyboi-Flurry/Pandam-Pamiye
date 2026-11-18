@@ -116,7 +116,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-paper">
       <ScrollUI />
-      <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-surface/90 backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-surface/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
           <a href="/" onClick={toTop} aria-label="Pandam Pamiye, back to top"><Logo school /></a>
           <nav className="hidden items-center gap-6 text-sm font-semibold text-slate-600 md:flex" aria-label="Page sections">

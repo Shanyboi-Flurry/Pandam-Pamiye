@@ -1,7 +1,6 @@
 import { useId } from 'react'
 import { LEVELS } from '../lib/constants'
 import { useDark } from './ui'
-import { cx } from '../lib/utils'
 
 /* ---------- small pieces ---------- */
 const Leaf = ({ x, y, flip = 1, s = 1, fill, rot = 0 }) => (
@@ -173,7 +172,7 @@ export function GrowthScene({ stage, className, compact }) {
   )
   const lawn = <ellipse cx="100" cy="163" rx="82" ry="16" fill="#2f8f4e" />
   return (
-    <svg viewBox={compact ? '20 30 160 160' : '0 0 200 200'} role="img" aria-label={`${LEVELS[stage].name} stage`} className={cx(className, compact && 'scene-still')} preserveAspectRatio="xMidYMid slice">
+    <svg viewBox={compact ? '20 30 160 160' : '0 0 200 200'} role="img" aria-label={`${LEVELS[stage].name} stage`} className={className} preserveAspectRatio="xMidYMid slice">
       <Sky dark={dark} stage={stage} />
       {stage === 0 && (
         <>
