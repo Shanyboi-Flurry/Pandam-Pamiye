@@ -1,4 +1,4 @@
-import { BookOpen, Calculator, Pencil, Dumbbell, Palette, Mic2, Sprout, Handshake, Gift, Clock, Repeat, Leaf, Users } from 'lucide-react'
+import { BookOpen, Calculator, Pencil, Dumbbell, Palette, Mic2, Sprout, Handshake, Gift, Clock, Repeat, Leaf, Users, Zap, Package } from 'lucide-react'
 
 export const CATEGORIES = [
   { id: 'books', label: 'Books & Reviewers', short: 'Books', icon: BookOpen, tint: 'bg-sky-100 text-sky-800', hex: '#3b82c4', weight: 0.5 },
@@ -7,6 +7,8 @@ export const CATEGORIES = [
   { id: 'sports', label: 'Sports Equipment', short: 'Sports', icon: Dumbbell, tint: 'bg-orange-100 text-orange-800', hex: '#e07a3a', weight: 1.0 },
   { id: 'art', label: 'Art Materials', short: 'Art', icon: Palette, tint: 'bg-pink-100 text-pink-800', hex: '#d1578a', weight: 0.4 },
   { id: 'event', label: 'Event Equipment', short: 'Events', icon: Mic2, tint: 'bg-teal-100 text-teal-800', hex: '#2f9a8c', weight: 4.0 },
+  { id: 'electronics', label: 'Electronics & Tools', short: 'Electronics', icon: Zap, tint: 'bg-red-100 text-red-800', hex: '#d9534f', weight: 0.8 },
+  { id: 'others', label: 'Others', short: 'Others', icon: Package, tint: 'bg-slate-200 text-slate-800', hex: '#64748b', weight: 0.5 },
 ]
 export const CAT = Object.fromEntries(CATEGORIES.map((c) => [c.id, c]))
 
