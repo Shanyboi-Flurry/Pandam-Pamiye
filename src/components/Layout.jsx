@@ -160,7 +160,7 @@ export default function Layout() {
         </div>
       )}
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-slate-200/70 bg-surface/70 px-4 py-3 backdrop-blur-xl sm:px-6">
+        <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-slate-200/70 bg-surface/90 px-4 py-3 backdrop-blur-md sm:px-6">
           <button className="btn-ghost !px-2.5 lg:hidden" onClick={() => setDrawer(true)} aria-label="Open menu">
             <Menu size={18} />
           </button>
